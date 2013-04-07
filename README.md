@@ -7,6 +7,7 @@ http://parsely.com/api/api\_ref.html
 
 To use these bindings:
 
+    pip install -r requirements.txt
     ipython
     >>> import parsely
     >>> p = parsely.Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
