@@ -40,7 +40,7 @@ class Parsely():
                     'pub_date_end': pub_end, 'sort': sort, 'limit': limit, 'page': page,
                     'days': days}
 
-    def meta_detail(self, aspect="author", value=None, days=14, start=None, end=None,
+    def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
                         pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
         if aspect not in ["author", "section", "topic", "tag"]:
             raise ValueError("Invalid aspect")
