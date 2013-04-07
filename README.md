@@ -16,3 +16,10 @@ To use these bindings:
     ...
     # et cetera
 
+To point the binding at the hackathon API, you can initialize the `Parsely`
+object with
+
+    >>> p = parsely.Parsely("arstechnica.com", root="http://hack.parsely.com/hackapi")
+
+**DISCLAIMER**: This binding is almost completely untested and feedback, error
+reports, or github issues are appreciated!

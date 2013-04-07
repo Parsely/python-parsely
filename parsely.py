@@ -4,8 +4,8 @@ import datetime as dt
 
 
 class Parsely():
-    def __init__(self, apikey, secret=None):
-        self.rooturl = "http://api.parsely.com/v2"
+    def __init__(self, apikey, secret=None, root=None):
+        self.rooturl = root if root else "http://api.parsely.com/v2"
         self.apikey = apikey
         self.secret = secret
 
