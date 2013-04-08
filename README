@@ -2,10 +2,10 @@ Parsely API python
 ==================
 
 This repo is a simple python binding for the Parsely API.
-API docs, on which this binding is based, can be found at
+The documentation, on which this binding is based, can be found at
 http://parsely.com/api/api_ref.html
 
-To use these bindings:
+To use this binding::
 
     pip install python-parsely requests
     ipython
@@ -17,10 +17,12 @@ To use these bindings:
     ...
     # et cetera
 
-To point the binding at the hackathon API, you can initialize the `Parsely`
-object with
+To run the unit tests::
 
-    >>> p = parsely.Parsely("arstechnica.com", root="http://hack.parsely.com/hackapi")
+    git clone http://github.com/emmett9001/python-parsely.git
+    cd python-parsely
+    pip install -r requests.txt
+    python tests.py
 
-**DISCLAIMER**: This binding is almost completely untested and feedback, error
+**DISCLAIMER**: This binding is poorly tested and feedback, error
 reports, or github issues are appreciated!
