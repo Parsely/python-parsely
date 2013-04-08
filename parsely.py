@@ -29,7 +29,7 @@ class Parsely():
     def analytics(self, aspect="posts", days=14, start=None, end=None, pub_start=None,
                     pub_end=None, sort="_hits", limit=10, page=1):
         if aspect not in ["posts", "authors", "sections", "topics", "tags"]:
-            raise ValueError("Invalid aspect")
+            raise ValueError("Invalid aspect %s" % aspect)
 
         options = self.formatAnalyticsArguments(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
@@ -44,7 +44,7 @@ class Parsely():
     def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
                         pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
         if aspect not in ["author", "section", "topic", "tag"]:
-            raise ValueError("Invalid aspect")
+            raise ValueError("Invalid aspect %s" % aspect)
 
         options = self.formatAnalyticsArguments(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
@@ -54,7 +54,7 @@ class Parsely():
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
                     start=None, end=None, pub_start=None, pub_end=None):
         if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type")
+            raise ValueError("Invalid referrer type %s" % ref_type)
 
         dates = self.formatDateArguments(start, end, pub_start, pub_end)
         options = {'section': section, 'tag': tag,
@@ -66,10 +66,10 @@ class Parsely():
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
                         days=3, start=None, end=None, pub_start=None, pub_end=None):
         if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type")
+            raise ValueError("Invalid referrer type %s" % ref_type)
 
         if meta not in ["posts", "authors", "sections", "topics", "tags"]:
-            raise ValueError("Invalid meta type")
+            raise ValueError("Invalid meta type %s" % meta)
 
         dates = self.formatDateArguments(start, end, pub_start, pub_end)
         options = {'section': section, 'domain': domain, 'days': days}
@@ -81,15 +81,15 @@ class Parsely():
                                 domain='', days=3, start=None, end=None, pub_start=None,
                                 pub_end=None):
         if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type")
+            raise ValueError("Invalid referrer type %s" % ref_type)
 
-        if meta not in ["posts", "authors", "sections", "topics", "tags"]:
-            raise ValueError("Invalid meta type")
+        if meta not in ["author", "section", "topic", "tag"]:
+            raise ValueError("Invalid meta type %s" % meta)
 
         dates = self.formatDateArguments(start, end, pub_start, pub_end)
         options = {'domain': domain, 'days': days}
 
-        return self.requestEndpoint('/referrers/%s/%s/%s' % (ref_type, meta, value),
+        return self.requestEndpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
                                     dict(options.items() + dates.items()))
 
     def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
@@ -125,7 +125,7 @@ class Parsely():
 
     def realtime(self, aspect="posts", per=None, limit=10, page=1):
         if aspect not in ["posts", "authors", "sections", "topics", "tags", "referrers"]:
-            raise ValueError("Invalid realtime type")
+            raise ValueError("Invalid realtime type %s" % aspect)
         # should be a datetime.timedelta
         options = {'limit': limit, 'page': page}
         if per:
@@ -180,8 +180,8 @@ class Parsely():
         if self.secret:
             url += "secret=%s&" % self.secret
         for k in options.keys():
-            url += "%s=%s&" % (k, options[k])
-        print url
+            if options[k]:
+                url += "%s=%s&" % (k, options[k])
         r = requests.get(url)
         if r.status_code == 200:
             js = json.loads(r.text)
