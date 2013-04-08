@@ -41,22 +41,6 @@ class Parsely():
             {'url': url, 'days': days}
         )
 
-    def formatAnalyticsArguments(self, days, start, end, pub_start,
-                                    pub_end, sort, limit, page):
-        if self.requireBoth(start, end):
-            raise ValueError("start and end must be specified together")
-        start = start.strftime("%Y-%m-%d") if start else ''
-        end = end.strftime("%Y-%m-%d") if end else ''
-
-        if self.requireBoth(pub_start, pub_end):
-            raise ValueError("pub start and pub end must be specified together")
-        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
-
-        return {'period_start': start, 'period_end': end, 'pub_date_start': pub_start,
-                    'pub_date_end': pub_end, 'sort': sort, 'limit': limit, 'page': page,
-                    'days': days}
-
     def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
                         pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
         if aspect not in ["author", "section", "topic", "tag"]:
@@ -72,21 +56,12 @@ class Parsely():
         if ref_type not in ["social", "search", "other", "internal"]:
             raise ValueError("Invalid referrer type")
 
-        if self.requireBoth(start, end):
-            raise ValueError("start and end must be specified together")
-        start = start.strftime("%Y-%m-%d") if start else ''
-        end = end.strftime("%Y-%m-%d") if end else ''
-
-        if self.requireBoth(pub_start, pub_end):
-            raise ValueError("pub start and pub end must be specified together")
-        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
-
-        options = {'period_start': start, 'period_end': end, 'pub_date_start': pub_start,
-                    'pub_date_end': pub_end, 'section': section, 'tag': tag,
+        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        options = {'section': section, 'tag': tag,
                     'domain': domain, 'days': days}
 
-        return self.requestEndpoint('/referrers/%s' % ref_type, options)
+        return self.requestEndpoint('/referrers/%s' % ref_type,
+                                dict(options.items()+dates.items()))
 
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
                         days=3, start=None, end=None, pub_start=None, pub_end=None):
@@ -96,21 +71,11 @@ class Parsely():
         if meta not in ["posts", "authors", "sections", "topics", "tags"]:
             raise ValueError("Invalid meta type")
 
-        if self.requireBoth(start, end):
-            raise ValueError("start and end must be specified together")
-        start = start.strftime("%Y-%m-%d") if start else ''
-        end = end.strftime("%Y-%m-%d") if end else ''
+        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        options = {'section': section, 'domain': domain, 'days': days}
 
-        if self.requireBoth(pub_start, pub_end):
-            raise ValueError("pub start and pub end must be specified together")
-        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
-
-        options = {'period_start': start, 'period_end': end, 'pub_date_start': pub_start,
-                    'pub_date_end': pub_end, 'section': section,
-                    'domain': domain, 'days': days}
-
-        return self.requestEndpoint('/referrers/%s/%s' % (ref_type, meta), options)
+        return self.requestEndpoint('/referrers/%s/%s' % (ref_type, meta),
+                                    dict(options.items() + dates.items()))
 
     def referrers_meta_detail(self, value, ref_type="social", meta="posts",
                                 domain='', days=3, start=None, end=None, pub_start=None,
@@ -121,37 +86,20 @@ class Parsely():
         if meta not in ["posts", "authors", "sections", "topics", "tags"]:
             raise ValueError("Invalid meta type")
 
-        if self.requireBoth(start, end):
-            raise ValueError("start and end must be specified together")
-        start = start.strftime("%Y-%m-%d") if start else ''
-        end = end.strftime("%Y-%m-%d") if end else ''
+        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        options = {'domain': domain, 'days': days}
 
-        if self.requireBoth(pub_start, pub_end):
-            raise ValueError("pub start and pub end must be specified together")
-        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
-
-        options = {'period_start': start, 'period_end': end, 'pub_date_start': pub_start,
-                    'pub_date_end': pub_end, 'domain': domain, 'days': days}
-
-        return self.requestEndpoint('/referrers/%s/%s/%s' % (ref_type, meta, value), options)
+        return self.requestEndpoint('/referrers/%s/%s/%s' % (ref_type, meta, value),
+                                    dict(options.items() + dates.items()))
 
     def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
                                 pub_end=None):
-        if self.requireBoth(start, end):
-            raise ValueError("start and end must be specified together")
-        start = start.strftime("%Y-%m-%d") if start else ''
-        end = end.strftime("%Y-%m-%d") if end else ''
 
-        if self.requireBoth(pub_start, pub_end):
-            raise ValueError("pub start and pub end must be specified together")
-        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
+        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        options = {'days': days, 'url': url}
 
-        options = {'period_start': start, 'period_end': end, 'pub_date_start': pub_start,
-                    'pub_date_end': pub_end, 'days': days, 'url': url}
-
-        return self.requestEndpoint('/referrers/post/detail', options)
+        return self.requestEndpoint('/referrers/post/detail',
+                                    dict(options.items() + dates.items()))
 
 
     def shares(self, aspect="posts", detail=False, days=14, start=None,
@@ -201,6 +149,28 @@ class Parsely():
 
     def search(self, query, limit=10, page=1):
         return self.requestEndpoint('/search', {'limit': limit, 'page': page})
+
+
+    def formatAnalyticsArguments(self, days, start, end, pub_start,
+                                    pub_end, sort, limit, page):
+
+        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
+        return dict(dates.items() + rest.items())
+
+    def formatDateArguments(self, start, end, pub_start, pub_end):
+        if self.requireBoth(start, end):
+            raise ValueError("start and end must be specified together")
+        start = start.strftime("%Y-%m-%d") if start else ''
+        end = end.strftime("%Y-%m-%d") if end else ''
+
+        if self.requireBoth(pub_start, pub_end):
+            raise ValueError("pub start and pub end must be specified together")
+        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
+        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
+
+        return {'period_start': start, 'period_end': end,
+            'pub_date_start': pub_start, 'pub_date_end': pub_end}
 
     def requireBoth(self, first, second):
         return (first and not second) or (second and not first)
