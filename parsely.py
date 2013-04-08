@@ -31,13 +31,13 @@ class Parsely():
         if aspect not in ["posts", "authors", "sections", "topics", "tags"]:
             raise ValueError("Invalid aspect %s" % aspect)
 
-        options = self.formatAnalyticsArguments(days, start, end, pub_start, pub_end,
+        options = self._format_analytics_args(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
 
-        return self.requestEndpoint('/analytics/%s' % aspect, options)
+        return self._request_endpoint('/analytics/%s' % aspect, options)
 
     def post_detail(self, url, days=''):
-        return self.requestEndpoint('/analytics/post/detail',
+        return self._request_endpoint('/analytics/post/detail',
             {'url': url, 'days': days}
         )
 
@@ -46,21 +46,21 @@ class Parsely():
         if aspect not in ["author", "section", "topic", "tag"]:
             raise ValueError("Invalid aspect %s" % aspect)
 
-        options = self.formatAnalyticsArguments(days, start, end, pub_start, pub_end,
+        options = self._format_analytics_args(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
 
-        return self.requestEndpoint('/analytics/%s/%s/detail' % (aspect, value), options)
+        return self._request_endpoint('/analytics/%s/%s/detail' % (aspect, value), options)
 
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
                     start=None, end=None, pub_start=None, pub_end=None):
         if ref_type not in ["social", "search", "other", "internal"]:
             raise ValueError("Invalid referrer type %s" % ref_type)
 
-        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        dates = self._format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'tag': tag,
                     'domain': domain, 'days': days}
 
-        return self.requestEndpoint('/referrers/%s' % ref_type,
+        return self._request_endpoint('/referrers/%s' % ref_type,
                                 dict(options.items()+dates.items()))
 
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
@@ -71,10 +71,10 @@ class Parsely():
         if meta not in ["posts", "authors", "sections", "topics", "tags"]:
             raise ValueError("Invalid meta type %s" % meta)
 
-        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        dates = self._format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'domain': domain, 'days': days}
 
-        return self.requestEndpoint('/referrers/%s/%s' % (ref_type, meta),
+        return self._request_endpoint('/referrers/%s/%s' % (ref_type, meta),
                                     dict(options.items() + dates.items()))
 
     def referrers_meta_detail(self, value, ref_type="social", meta="posts",
@@ -86,19 +86,19 @@ class Parsely():
         if meta not in ["author", "section", "topic", "tag"]:
             raise ValueError("Invalid meta type %s" % meta)
 
-        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        dates = self._format_date_args(start, end, pub_start, pub_end)
         options = {'domain': domain, 'days': days}
 
-        return self.requestEndpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
+        return self._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
                                     dict(options.items() + dates.items()))
 
     def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
                                 pub_end=None):
 
-        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        dates = self._format_date_args(start, end, pub_start, pub_end)
         options = {'days': days, 'url': url}
 
-        return self.requestEndpoint('/referrers/post/detail',
+        return self._request_endpoint('/referrers/post/detail',
                                     dict(options.items() + dates.items()))
 
 
@@ -107,18 +107,18 @@ class Parsely():
         if detail:
             if not url:
                 raise ValueError("Url required for shares detail")
-            return self.requestEndpoint('/shares/post/detail', {'url': url})
+            return self._request_endpoint('/shares/post/detail', {'url': url})
         else:
             if aspect not in ["posts", "authors"]:
                 raise ValueError("Aspect must be one of posts, authors")
 
-            if self.requireBoth(start, end):
+            if self._require_both(start, end):
                 raise ValueError("Start and end must be specified together")
 
             start = start.strftime("%Y-%m-%d") if start else ''
             end = end.strftime("%Y-%m-%d") if end else ''
 
-            return self.requestEndpoint('/shares/%s' % aspect,
+            return self._request_endpoint('/shares/%s' % aspect,
                 {'pub_days': days, 'pub_date_start': start, 'pub_date_end': end,
                 'limit': 10, 'page': 1}
             )
@@ -130,41 +130,41 @@ class Parsely():
         options = {'limit': limit, 'page': page}
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
-        return self.requestEndpoint('/realtime/%s' % aspect, options)
+        return self._request_endpoint('/realtime/%s' % aspect, options)
 
     def train(self, uuid, url):
-        return self.requestEndpoint('/profile', {'uuid': uuid, 'url': url})
+        return self._request_endpoint('/profile', {'uuid': uuid, 'url': url})
 
     def related(self, url='', uuid='', days=14, limit=10, page=1, section=""):
         if url == '' and uuid == '':
             raise ValueError("Must specify url or uuid")
         if url != '' and uuid != '':
             raise ValueError("Must specify only url or uuid, not both")
-        return self.requestEndpoint('/related',
+        return self._request_endpoint('/related',
             {'url': url, 'uuid': uuid, 'days': days, 'limit': limit, 'page': page}
         )
 
     def history(self, uuid):
-        return self.requestEndpoint('/history', {'uuid': uuid})
+        return self._request_endpoint('/history', {'uuid': uuid})
 
     def search(self, query, limit=10, page=1):
-        return self.requestEndpoint('/search', {'limit': limit, 'page': page})
+        return self._request_endpoint('/search', {'limit': limit, 'page': page})
 
 
-    def formatAnalyticsArguments(self, days, start, end, pub_start,
+    def _format_analytics_args(self, days, start, end, pub_start,
                                     pub_end, sort, limit, page):
 
-        dates = self.formatDateArguments(start, end, pub_start, pub_end)
+        dates = self._format_date_args(start, end, pub_start, pub_end)
         rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
         return dict(dates.items() + rest.items())
 
-    def formatDateArguments(self, start, end, pub_start, pub_end):
-        if self.requireBoth(start, end):
+    def _format_date_args(self, start, end, pub_start, pub_end):
+        if self._require_both(start, end):
             raise ValueError("start and end must be specified together")
         start = start.strftime("%Y-%m-%d") if start else ''
         end = end.strftime("%Y-%m-%d") if end else ''
 
-        if self.requireBoth(pub_start, pub_end):
+        if self._require_both(pub_start, pub_end):
             raise ValueError("pub start and pub end must be specified together")
         pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
         pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
@@ -172,10 +172,10 @@ class Parsely():
         return {'period_start': start, 'period_end': end,
             'pub_date_start': pub_start, 'pub_date_end': pub_end}
 
-    def requireBoth(self, first, second):
+    def _require_both(self, first, second):
         return (first and not second) or (second and not first)
 
-    def requestEndpoint(self, endpoint, options={}):
+    def _request_endpoint(self, endpoint, options={}):
         url = self.rooturl + endpoint + "?apikey=%s&" % self.apikey
         if self.secret:
             url += "secret=%s&" % self.secret
