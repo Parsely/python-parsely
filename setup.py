@@ -4,7 +4,7 @@ setup(
     name='python-parsely',
     version='1.2',
     py_modules=['parsely'],
-    requires=['requests']
+    requires=['requests'],
 
     author='emmett butler',
     author_email='emmett.butler321@gmail.com',
