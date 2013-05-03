@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='python-parsely',
-    version='1.3',
+    version='1.4',
     py_modules=['parsely'],
     requires=['requests'],
 

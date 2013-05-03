@@ -19,6 +19,8 @@ import requests
 import json
 import datetime as dt
 
+from models import Post, Author, Section, Topic, Tag, Referrer
+
 
 class Parsely():
     def __init__(self, apikey, secret=None, root=None):
@@ -34,12 +36,23 @@ class Parsely():
         options = self._format_analytics_args(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
 
-        return self._request_endpoint('/analytics/%s' % aspect, options)
+        res = self._request_endpoint('/analytics/%s' % aspect, options)
+        if aspect == "posts":
+            return [Post.new_from_json_dict(x) for x in res['data']]
+        elif aspect == "authors":
+            return [Author.new_from_json_dict(x) for x in res['data']]
+        elif aspect == "sections":
+            return [Section.new_from_json_dict(x) for x in res['data']]
+        elif aspect == "topics":
+            return [Topic.new_from_json_dict(x) for x in res['data']]
+        elif aspect == "tags":
+            return [Tag.new_from_json_dict(x) for x in res['data']]
 
     def post_detail(self, url, days=''):
-        return self._request_endpoint('/analytics/post/detail',
+        res = self._request_endpoint('/analytics/post/detail',
             {'url': url, 'days': days}
         )
+        return Post.new_from_json_dict(res['data'][0])
 
     def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
                         pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
@@ -60,8 +73,11 @@ class Parsely():
         options = {'section': section, 'tag': tag,
                     'domain': domain, 'days': days}
 
-        return self._request_endpoint('/referrers/%s' % ref_type,
+        res = self._request_endpoint('/referrers/%s' % ref_type,
                                 dict(options.items()+dates.items()))
+        for r in res['data']:
+            r['ref_type'] = ref_type
+        return [Referrer.new_from_json_dict(x) for x in res['data']]
 
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
                         days=3, start=None, end=None, pub_start=None, pub_end=None):
@@ -118,10 +134,15 @@ class Parsely():
             start = start.strftime("%Y-%m-%d") if start else ''
             end = end.strftime("%Y-%m-%d") if end else ''
 
-            return self._request_endpoint('/shares/%s' % aspect,
+            res = self._request_endpoint('/shares/%s' % aspect,
                 {'pub_days': days, 'pub_date_start': start, 'pub_date_end': end,
                 'limit': 10, 'page': 1}
             )
+
+            if aspect == "posts":
+                return [Post.new_from_json_dict(x) for x in res['data']]
+            elif aspect == "authors":
+                return [Author.new_from_json_dict(x) for x in res['data']]
 
     def realtime(self, aspect="posts", per=None, limit=10, page=1):
         if aspect not in ["posts", "authors", "sections", "topics", "tags", "referrers"]:
@@ -150,10 +171,8 @@ class Parsely():
     def search(self, query, limit=10, page=1):
         return self._request_endpoint('/search', {'limit': limit, 'page': page})
 
-
     def _format_analytics_args(self, days, start, end, pub_start,
                                     pub_end, sort, limit, page):
-
         dates = self._format_date_args(start, end, pub_start, pub_end)
         rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
         return dict(dates.items() + rest.items())
