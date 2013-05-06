@@ -1,14 +1,29 @@
 Parsely API python
 ==================
 
-This repo is a simple python binding for the Parsely API.
+This library provides a pure Python interface for the Parsely API.
 The documentation, on which this binding is based, can be found at
 http://parsely.com/api/api_ref.html
 
-To use this binding::
+Installation
+------------
+
+python-parsely is available on PyPI. To download it, use pip::
 
     pip install python-parsely requests
-    ipython
+
+You need to install requests alongside python-parsely due to a pip bug.
+
+Getting the Code
+----------------
+
+Git clone this repository - it's the primary source of the python-parsely code.
+
+    git clone http://github.com/emmett9001/python-parsely.git
+
+Using python-parsely
+--------------------
+
     >>> import parsely
     >>> p = parsely.Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
     >>> p.shares()
@@ -17,12 +32,27 @@ To use this binding::
     ...
     # et cetera
 
-To run the unit tests::
+Testing
+-------
 
-    git clone http://github.com/emmett9001/python-parsely.git
-    cd python-parsely
-    pip install -r requests.txt
+To run the unit tests for this library, use
+
     python tests.py
 
-**DISCLAIMER**: This binding is poorly tested and feedback, error
-reports, or github issues are appreciated!
+License
+-------
+
+    Copyright (C) 2013 Emmett Butler, Parsely Inc.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
