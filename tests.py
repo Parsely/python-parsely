@@ -15,7 +15,7 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_related(self):
         r = self.p.related(uuid=self.uuid)
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(len(r) > 0)
 
     def test_history(self):
         h = self.p.history(self.uuid)
@@ -31,7 +31,7 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_shares(self):
         s = self.p.shares()
-        self.assertTrue(len(s['data']) > 0)
+        self.assertTrue(len(s) > 0)
 
     def test_referrers_post_detail(self):
         r = self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/')
@@ -47,7 +47,7 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_referrers(self):
         r = self.p.referrers()
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(len(r) > 0)
 
     def test_meta_detail(self):
         r = self.p.meta_detail('Uncategorized', aspect="section")
@@ -55,11 +55,11 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_post_detail(self):
         r = self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/')
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(r.title == "Inside science: Selling and upsizing the meal")
 
     def test_analytics(self):
         r = self.p.analytics()
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(len(r) > 0)
 
 
 if __name__ == '__main__':
