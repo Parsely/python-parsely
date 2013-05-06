@@ -23,11 +23,11 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_search(self):
         s = self.p.search("security")
-        self.assertTrue(len(s['data']) > 0)
+        self.assertTrue(len(s) > 0)
 
     def test_realtime(self):
         r = self.p.realtime()
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(len(r) > 0)
 
     def test_shares(self):
         s = self.p.shares()
@@ -35,11 +35,11 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_referrers_post_detail(self):
         r = self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/')
-        self.assertTrue(len(r['data']) > 0)
+        self.assertTrue(len(r) > 0)
 
     def test_referrers_meta_detail(self):
         r = self.p.referrers_meta_detail('Ars Staff', meta="author")
-        self.assertTrue(len(r['data']) > 0)
+        self.assertEquals(r[3].author, "Ars Staff")
 
     def test_referrers_meta(self):
         r = self.p.referrers_meta()
@@ -51,7 +51,7 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_meta_detail(self):
         r = self.p.meta_detail('Uncategorized', aspect="section")
-        self.assertTrue(len(r['data']) > 0)
+        self.assertEquals(r[3].section, "Uncategorized")
 
     def test_post_detail(self):
         r = self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/')

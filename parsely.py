@@ -47,7 +47,8 @@ class Parsely():
         options = _format_analytics_args(days, start, end, pub_start, pub_end,
                                             sort, limit, page)
 
-        return self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value), options)
+        res = self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value), options)
+        return [Post.new_from_json_dict(x) for x in res['data']]
 
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
                     start=None, end=None, pub_start=None, pub_end=None):
@@ -75,8 +76,9 @@ class Parsely():
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'domain': domain, 'days': days}
 
-        return self.conn._request_endpoint('/referrers/%s/%s' % (ref_type, meta),
+        res = self.conn._request_endpoint('/referrers/%s/%s' % (ref_type, meta),
                                     dict(options.items() + dates.items()))
+        return res
 
     def referrers_meta_detail(self, value, ref_type="social", meta="posts",
                                 domain='', days=3, start=None, end=None, pub_start=None,
@@ -90,8 +92,9 @@ class Parsely():
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'domain': domain, 'days': days}
 
-        return self.conn._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
+        res = self.conn._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
                                     dict(options.items() + dates.items()))
+        return [Post.new_from_json_dict(x) for x in res['data']]
 
     def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
                                 pub_end=None):
@@ -99,8 +102,9 @@ class Parsely():
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'days': days, 'url': url}
 
-        return self.conn._request_endpoint('/referrers/post/detail',
+        res = self.conn._request_endpoint('/referrers/post/detail',
                                     dict(options.items() + dates.items()))
+        return [Referrer.new_from_json_dict(x) for x in res['data']]
 
 
     def shares(self, aspect="posts", detail=False, days=14, start=None,
@@ -136,7 +140,8 @@ class Parsely():
         options = {'limit': limit, 'page': page}
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
-        return self.conn._request_endpoint('/realtime/%s' % aspect, options)
+        res = self.conn._request_endpoint('/realtime/%s' % aspect, options)
+        return [Post.new_from_json_dict(x) for x in res['data']]
 
     def train(self, uuid, url):
         return self.recs.train(uuid, url)
@@ -148,4 +153,5 @@ class Parsely():
         return self.recs.history(uuid)
 
     def search(self, query, limit=10, page=1):
-        return self.conn._request_endpoint('/search', {'limit': limit, 'page': page})
+        res = self.conn._request_endpoint('/search', {'limit': limit, 'page': page})
+        return [Post.new_from_json_dict(x) for x in res['data']]
