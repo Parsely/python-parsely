@@ -5,33 +5,27 @@ import datetime as dt
 from models import Post, Author, Section, Topic, Tag, Referrer
 from recommendations import Recommendations
 from utils import _format_analytics_args, _format_date_args, _require_both
-from utils import ParselyAPIConnection
+from utils import ParselyAPIConnection, valid_kwarg
 
+
+aspect_map = {"posts": Post, "authors": Author, "sections": Section,
+                    "topics": Topic, "tags": Tag}
+ref_types = ['internal', 'social', 'search', 'other']
 
 class Parsely():
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)
         self.recs = Recommendations(self.conn)
 
-    def analytics(self, aspect="posts", days=14, start=None, end=None, pub_start=None,
-                    pub_end=None, sort="_hits", limit=10, page=1):
-        if aspect not in ["posts", "authors", "sections", "topics", "tags"]:
-            raise ValueError("Invalid aspect %s" % aspect)
+    @valid_kwarg(aspect_map.keys())
+    def analytics(self, aspect="posts", days=14, start=None, end=None,
+                  pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
 
         options = _format_analytics_args(days, start, end, pub_start, pub_end,
-                                            sort, limit, page)
+                                         sort, limit, page)
 
         res = self.conn._request_endpoint('/analytics/%s' % aspect, options)
-        if aspect == "posts":
-            return [Post.new_from_json_dict(x) for x in res['data']]
-        elif aspect == "authors":
-            return [Author.new_from_json_dict(x) for x in res['data']]
-        elif aspect == "sections":
-            return [Section.new_from_json_dict(x) for x in res['data']]
-        elif aspect == "topics":
-            return [Topic.new_from_json_dict(x) for x in res['data']]
-        elif aspect == "tags":
-            return [Tag.new_from_json_dict(x) for x in res['data']]
+        return [aspect_map[aspect].new_from_json_dict(x) for x in res['data']]
 
     def post_detail(self, url, days=''):
         res = self.conn._request_endpoint('/analytics/post/detail',
@@ -39,84 +33,74 @@ class Parsely():
         )
         return Post.new_from_json_dict(res['data'][0])
 
+    @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"])
     def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
-                        pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
-        if aspect not in ["author", "section", "topic", "tag"]:
-            raise ValueError("Invalid aspect %s" % aspect)
+                    pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
 
         options = _format_analytics_args(days, start, end, pub_start, pub_end,
-                                            sort, limit, page)
+                                         sort, limit, page)
 
         res = self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value), options)
         return [Post.new_from_json_dict(x) for x in res['data']]
 
+    @valid_kwarg(ref_types, arg_name="ref_type")
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
-                    start=None, end=None, pub_start=None, pub_end=None):
-        if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type %s" % ref_type)
+                  start=None, end=None, pub_start=None, pub_end=None):
 
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'tag': tag,
-                    'domain': domain, 'days': days}
+                   'domain': domain, 'days': days}
 
         res = self.conn._request_endpoint('/referrers/%s' % ref_type,
-                                dict(options.items()+dates.items()))
+                                          dict(options.items()+dates.items()))
         for r in res['data']:
             r['ref_type'] = ref_type
         return [Referrer.new_from_json_dict(x) for x in res['data']]
 
+    @valid_kwarg(ref_types, arg_name="ref_type")
+    @valid_kwarg(aspect_map.keys(), arg_name="meta")
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
-                        days=3, start=None, end=None, pub_start=None, pub_end=None):
-        if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type %s" % ref_type)
-
-        if meta not in ["posts", "authors", "sections", "topics", "tags"]:
-            raise ValueError("Invalid meta type %s" % meta)
+                       days=3, start=None, end=None, pub_start=None, pub_end=None):
 
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'domain': domain, 'days': days}
 
         res = self.conn._request_endpoint('/referrers/%s/%s' % (ref_type, meta),
-                                    dict(options.items() + dates.items()))
+                                          dict(options.items() + dates.items()))
         return res
 
-    def referrers_meta_detail(self, value, ref_type="social", meta="posts",
-                                domain='', days=3, start=None, end=None, pub_start=None,
-                                pub_end=None):
-        if ref_type not in ["social", "search", "other", "internal"]:
-            raise ValueError("Invalid referrer type %s" % ref_type)
-
-        if meta not in ["author", "section", "topic", "tag"]:
-            raise ValueError("Invalid meta type %s" % meta)
+    @valid_kwarg(ref_types, arg_name="ref_type")
+    @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"], arg_name="meta")
+    def referrers_meta_detail(self, value, ref_type="social", meta="author",
+                              domain='', days=3, start=None, end=None,
+                              pub_start=None, pub_end=None):
 
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'domain': domain, 'days': days}
 
         res = self.conn._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
-                                    dict(options.items() + dates.items()))
+                                          dict(options.items() + dates.items()))
         return [Post.new_from_json_dict(x) for x in res['data']]
 
     def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
-                                pub_end=None):
+                              pub_end=None):
 
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'days': days, 'url': url}
 
         res = self.conn._request_endpoint('/referrers/post/detail',
-                                    dict(options.items() + dates.items()))
+                                          dict(options.items() + dates.items()))
         return [Referrer.new_from_json_dict(x) for x in res['data']]
 
 
+    @valid_kwarg(["posts", "authors"])
     def shares(self, aspect="posts", detail=False, days=14, start=None,
-                end=None, limit=10, page=1, url=''):
+               end=None, limit=10, page=1, url=''):
         if detail:
             if not url:
                 raise ValueError("Url required for shares detail")
             return self.conn._request_endpoint('/shares/post/detail', {'url': url})
         else:
-            if aspect not in ["posts", "authors"]:
-                raise ValueError("Aspect must be one of posts, authors")
-
             if _require_both(start, end):
                 raise ValueError("Start and end must be specified together")
 
@@ -128,18 +112,14 @@ class Parsely():
                 'limit': 10, 'page': 1}
             )
 
-            if aspect == "posts":
-                return [Post.new_from_json_dict(x) for x in res['data']]
-            elif aspect == "authors":
-                return [Author.new_from_json_dict(x) for x in res['data']]
+            return [aspect_map[aspect].new_from_json_dict(x) for x in res['data']]
 
+    @valid_kwarg(aspect_map.keys())
     def realtime(self, aspect="posts", per=None, limit=10, page=1):
-        if aspect not in ["posts", "authors", "sections", "topics", "tags", "referrers"]:
-            raise ValueError("Invalid realtime type %s" % aspect)
-        # should be a datetime.timedelta
         options = {'limit': limit, 'page': page}
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
+
         res = self.conn._request_endpoint('/realtime/%s' % aspect, options)
         return [Post.new_from_json_dict(x) for x in res['data']]
 

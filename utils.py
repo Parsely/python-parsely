@@ -25,6 +25,16 @@ def _format_date_args(start, end, pub_start, pub_end):
 def _require_both(first, second):
     return (first and not second) or (second and not first)
 
+def valid_kwarg(aspects, arg_name=""):
+    def _valid_aspect(func):
+        def inner(*args, **kwargs):
+            name = arg_name if arg_name else "aspect"
+            if name in kwargs.keys() and kwargs[name] not in aspects:
+                raise ValueError("Invalid %s: %s" % (name, kwargs[name]))
+            return func(*args, **kwargs)
+        return inner
+    return _valid_aspect
+
 
 class ParselyAPIConnection():
     def __init__(self, apikey, secret=None, root=None):

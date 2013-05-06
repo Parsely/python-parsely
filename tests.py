@@ -58,7 +58,7 @@ class TestParselyBindings(unittest.TestCase):
         self.assertTrue(r.title == "Inside science: Selling and upsizing the meal")
 
     def test_analytics(self):
-        r = self.p.analytics()
+        r = self.p.analytics(aspect="authors")
         self.assertTrue(len(r) > 0)
 
 
