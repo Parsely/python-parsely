@@ -1,5 +1,5 @@
-Parsely API python
-==================
+Parsely API Python Binding
+==========================
 
 This library provides a pure Python interface for the Parsely API.
 The documentation, on which this binding is based, can be found at
