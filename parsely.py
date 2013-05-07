@@ -3,7 +3,6 @@ import json
 import datetime as dt
 
 from models import Post, Author, Section, Topic, Tag, Referrer, Shares
-from recommendations import Recommendations
 from utils import _format_analytics_args, _format_date_args, _require_both
 from utils import ParselyAPIConnection, valid_kwarg
 
@@ -15,7 +14,6 @@ ref_types = ['internal', 'social', 'search', 'other']
 class Parsely():
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)
-        self.recs = Recommendations(self.conn)
 
     @valid_kwarg(aspect_map.keys())
     def analytics(self, aspect="posts", days=14, start=None, end=None,
@@ -27,16 +25,18 @@ class Parsely():
         res = self.conn._request_endpoint('/analytics/%s' % aspect, options)
         return [aspect_map[aspect].new_from_json_dict(x) for x in res['data']]
 
-    def post_detail(self, url, days=''):
+    def post_detail(self, post, days=''):
+        url = post.url if hasattr(post, 'url') else post
         res = self.conn._request_endpoint('/analytics/post/detail',
             {'url': url, 'days': days}
         )
         return Post.new_from_json_dict(res['data'][0])
 
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"])
-    def meta_detail(self, value, aspect="author", days=14, start=None, end=None,
+    def meta_detail(self, meta_obj, aspect="author", days=14, start=None, end=None,
                     pub_start=None, pub_end=None, sort="_hits", limit=10, page=1):
 
+        value = getattr(meta_obj, aspect) if hasattr(meta_obj, aspect) else meta_obj
         options = _format_analytics_args(days, start, end, pub_start, pub_end,
                                          sort, limit, page)
 
@@ -72,9 +72,11 @@ class Parsely():
 
     @valid_kwarg(ref_types, arg_name="ref_type")
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"], arg_name="meta")
-    def referrers_meta_detail(self, value, ref_type="social", meta="author",
+    def referrers_meta_detail(self, meta_obj, ref_type="social", meta="author",
                               domain='', days=3, start=None, end=None,
                               pub_start=None, pub_end=None):
+
+        value = getattr(meta_obj, meta) if hasattr(meta_obj, meta) else meta_obj
 
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'domain': domain, 'days': days}
@@ -83,9 +85,10 @@ class Parsely():
                                           dict(options.items() + dates.items()))
         return [Post.new_from_json_dict(x) for x in res['data']]
 
-    def referrers_post_detail(self, url, days=3, start=None, end=None, pub_start=None,
+    def referrers_post_detail(self, post, days=3, start=None, end=None, pub_start=None,
                               pub_end=None):
 
+        url = post.url if hasattr(post, 'url') else post
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'days': days, 'url': url}
 
@@ -95,11 +98,10 @@ class Parsely():
 
 
     @valid_kwarg(["posts", "authors"])
-    def shares(self, aspect="posts", detail=False, days=14, start=None,
-               end=None, limit=10, page=1, url=''):
-        if detail:
-            if not url:
-                raise ValueError("Url required for shares detail")
+    def shares(self, aspect="posts", days=14, start=None,
+               end=None, limit=10, page=1, post=''):
+        url = post.url if hasattr(post, 'url') else post
+        if url:
             res = self.conn._request_endpoint('/shares/post/detail', {'url': url})
             return Shares.new_from_json_dict(res['data'][0])
         else:
@@ -125,14 +127,10 @@ class Parsely():
         res = self.conn._request_endpoint('/realtime/%s' % aspect, options)
         return [Post.new_from_json_dict(x) for x in res['data']]
 
-    def train(self, uuid, url):
-        return self.recs.train(uuid, url)
-
-    def related(self, url='', uuid='', days=14, limit=10, page=1, section=""):
-        return self.recs.related(days, limit, page, section, url=url, uuid=uuid)
-
-    def history(self, uuid):
-        return self.recs.history(uuid)
+    def related(self, url, days=14, limit=10, page=1, section=""):
+        options = {'url': url, 'days': days, 'limit': limit, 'page': page}
+        res = self.conn._request_endpoint('/related', options)
+        return [Post.new_from_json_dict(x) for x in res['data']]
 
     def search(self, query, limit=10, page=1):
         res = self.conn._request_endpoint('/search', {'limit': limit, 'page': page})

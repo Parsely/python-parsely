@@ -8,7 +8,7 @@ http://parsely.com/api/api_ref.html
 Installation
 ------------
 
-python-parsely is available on PyPI. To download it, use pip::
+python-parsely is available on PyPI. To download it, use pip:
 
     pip install python-parsely requests
 
@@ -24,13 +24,70 @@ Git clone this repository - it's the primary source of the python-parsely code.
 Using python-parsely
 --------------------
 
+To use Parsely from Python, first import it
+
     >>> import parsely
+
+Create a new Parsely object with your public and private API keys
+
     >>> p = parsely.Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
+
+To get a list of recent top posts, use
+
+    >>> posts = p.analytics()
+
+The objects in this list are Posts:
+
+    >>> posts[1]
+    <models.Post instance at 0x21bc828>
+
+You can pass these Posts to other library functions. `meta_detail` returns a list of
+Posts sharing the same `aspect` as the Post you give it.
+
+    >>> p.meta_detail(posts[1], aspect="section")[1:2]
+    [<models.Post instance at 0x21bc828>]
+
+`post_detail` gives more detailed information on the Post
+
+    >>> p.post_detail(posts[1])
+
+You can also use the library to get shares and referrers information surrounding
+given posts.
+
+    >>> p.referrers_meta_detail(posts[1], meta="author")
+    >>> p.referrers_post_detail(posts[1])
     >>> p.shares()
-    ...
-    >>> p.analytics()
-    ...
-    # et cetera
+    >>> p.shares(post=posts[1])
+
+The `realtime` call can be used to make a live-updating feed of pageview data:
+
+    import time
+    for i in range(1,5):
+        real = p.realtime(limit=1)
+        for r in real:
+            print "%s: %d" % (r.title, r.hits)
+            print "\n"
+        time.sleep(3)
+
+Recommendations API
+-------------------
+
+The library handles personalized recommendations via the User class
+
+    >>> from recommendations import User
+    >>> user = User(p, "myuuid")
+
+You can train a user profile with a post
+
+    >>> user.train(posts[1])
+
+Get a user's history with `history`
+
+    >>> user.history()
+
+Receive personalized User recommendations with `related`
+
+    >>> user.related()
 
 Testing
 -------

@@ -2,6 +2,7 @@ import unittest
 import random
 
 import parsely
+from recommendations import User
 from secret import secrets
 
 class TestParselyBindings(unittest.TestCase):
@@ -10,17 +11,22 @@ class TestParselyBindings(unittest.TestCase):
         self.uuid = 'user%d' % random.randint(1000, 9999)
         self.p = parsely.Parsely(self.apikey, secrets[self.apikey])
         self.train_link = 'http://arstechnica.com/gadgets/2013/04/tunein-radio-app-update-makes-it-easier-for-users-to-discover-new-music/'
+        self.user = User(self.p, self.uuid)
 
     def test_train(self):
-        t = self.p.train(self.uuid, self.train_link)
+        t = self.user.train(self.train_link)
         self.assertEquals(t, True)
 
-        h = self.p.history(self.uuid)
+        h = self.user.history()
         self.assertEquals(h['uuid'], self.uuid)
         self.assertIn(self.train_link, h['urls'])
 
-    def test_related(self):
-        r = self.p.related(uuid=self.uuid)
+    def test_related_user(self):
+        r = self.user.related()
+        self.assertTrue(r[3].title != "")
+
+    def test_related_url(self):
+        r = self.p.related(self.train_link)
         self.assertTrue(r[3].title != "")
 
     def test_search(self):
@@ -37,7 +43,7 @@ class TestParselyBindings(unittest.TestCase):
         self.assertTrue(s[3].name != "")
 
     def test_shares_detail(self):
-        s = self.p.shares(url=self.train_link, detail=True)
+        s = self.p.shares(post=self.train_link)
         self.assertTrue(s.total > 0)
 
     def test_referrers_post_detail(self):
