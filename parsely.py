@@ -2,7 +2,7 @@
 import json
 import datetime as dt
 
-from models import Post, Author, Section, Topic, Tag, Referrer
+from models import Post, Author, Section, Topic, Tag, Referrer, Shares
 from recommendations import Recommendations
 from utils import _format_analytics_args, _format_date_args, _require_both
 from utils import ParselyAPIConnection, valid_kwarg
@@ -65,9 +65,10 @@ class Parsely():
         dates = _format_date_args(start, end, pub_start, pub_end)
         options = {'section': section, 'domain': domain, 'days': days}
 
-        res = self.conn._request_endpoint('/referrers/%s/%s' % (ref_type, meta),
+        endpoint = '/referrers/%s/%s' % (ref_type, meta)
+        res = self.conn._request_endpoint(endpoint,
                                           dict(options.items() + dates.items()))
-        return res
+        return [aspect_map[meta].new_from_json_dict(x) for x in res['data']]
 
     @valid_kwarg(ref_types, arg_name="ref_type")
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"], arg_name="meta")
@@ -99,7 +100,8 @@ class Parsely():
         if detail:
             if not url:
                 raise ValueError("Url required for shares detail")
-            return self.conn._request_endpoint('/shares/post/detail', {'url': url})
+            res = self.conn._request_endpoint('/shares/post/detail', {'url': url})
+            return Shares.new_from_json_dict(res['data'][0])
         else:
             if _require_both(start, end):
                 raise ValueError("Start and end must be specified together")

@@ -5,10 +5,13 @@ class Recommendations():
         self.conn = conn
 
     def train(self, uuid, url):
-        return self.conn._request_endpoint('/profile', {'uuid': uuid, 'url': url})
+        res = self.conn._request_endpoint('/profile', {'uuid': uuid, 'url': url})
+        if res['success']:
+            return True
+        return False
 
     def history(self, uuid):
-        return self.conn._request_endpoint('/history', {'uuid': uuid})
+        return self.conn._request_endpoint('/history', {'uuid': uuid})['data']
 
     def related(self, days, limit, page, section, url="", uuid=""):
         if url == '' and uuid == '':
