@@ -63,8 +63,8 @@ class TestParselyBindings(unittest.TestCase):
         self.assertTrue(r[2].hits > 0)
 
     def test_meta_detail(self):
-        r = self.p.meta_detail('Uncategorized', aspect="section")
-        self.assertEquals(r[3].section, "Uncategorized")
+        r = self.p.meta_detail('Technology Lab', aspect="section")
+        self.assertEquals(r[3].section, "Technology Lab")
 
     def test_post_detail(self):
         r = self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/')

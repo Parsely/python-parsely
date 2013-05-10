@@ -1,4 +1,3 @@
-
 import json
 import datetime as dt
 
@@ -95,7 +94,6 @@ class Parsely():
         res = self.conn._request_endpoint('/referrers/post/detail',
                                           dict(options.items() + dates.items()))
         return [Referrer.new_from_json_dict(x) for x in res['data']]
-
 
     @valid_kwarg(["posts", "authors"])
     def shares(self, aspect="posts", days=14, start=None,

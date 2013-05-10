@@ -2,8 +2,8 @@ from distutils.core import setup
 
 setup(
     name='python-parsely',
-    version='1.4',
-    py_modules=['parsely'],
+    version='1.4.2',
+    packages = ['parsely'],
     requires=['requests'],
 
     author='emmett butler',

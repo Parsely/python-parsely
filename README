@@ -26,11 +26,11 @@ Using python-parsely
 
 To use Parsely from Python, first import it
 
-    >>> import parsely
+    >>> from parsely.parsely import Parsely
 
 Create a new Parsely object with your public and private API keys
 
-    >>> p = parsely.Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
+    >>> p = Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
 
 To get a list of recent top posts, use
 
