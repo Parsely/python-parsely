@@ -13,6 +13,14 @@ ref_types = ['internal', 'social', 'search', 'other']
 class Parsely():
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)
+        if not self.authenticated():
+            raise ValueError("Authentication failed")
+
+    def authenticated(self):
+        res = self.conn._request_endpoint('/analytics/posts', {})
+        if res['code'] == 403 or res['success'] == False:
+            return False
+        return True
 
     @valid_kwarg(aspect_map.keys())
     def analytics(self, aspect="posts", days=14, start=None, end=None,
