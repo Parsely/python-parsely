@@ -23,7 +23,7 @@ def _format_date_args(start, end, pub_start, pub_end):
         'pub_date_start': pub_start, 'pub_date_end': pub_end}
 
 def _require_both(first, second):
-    return (first and not second) or (second and not first)
+    return bool(first) != bool(second)
 
 def valid_kwarg(aspects, arg_name=""):
     def _valid_aspect(func):
