@@ -18,7 +18,7 @@ class Parsely():
 
     def authenticated(self):
         res = self.conn._request_endpoint('/analytics/posts', {})
-        if res['code'] == 403 or res['success'] == False:
+        if 'code' in res and res['code'] == 403:
             return False
         return True
 
