@@ -12,8 +12,6 @@ python-parsely is available on PyPI. To download it, use pip:
 
     pip install python-parsely requests
 
-You need to install requests alongside python-parsely due to a pip bug.
-
 Getting the Code
 ----------------
 
@@ -30,7 +28,7 @@ To use Parsely from Python, first import it
 
 Create a new Parsely object with your public and private API keys
 
-    >>> p = Parsely("arstechnica.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
+    >>> p = Parsely("mysite.com", secret="asf98gf7aw98ev7nwe98vfayewfa9hew8f7ha")
 
 To get a list of recent top posts, use
 
