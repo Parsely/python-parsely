@@ -139,5 +139,6 @@ class Parsely():
         return [Post.new_from_json_dict(x) for x in res['data']]
 
     def search(self, query, limit=10, page=1):
-        res = self.conn._request_endpoint('/search', {'limit': limit, 'page': page})
+        res = self.conn._request_endpoint('/search', {'q': query, 'limit': limit,
+                                                      'page': page})
         return [Post.new_from_json_dict(x) for x in res['data']]
