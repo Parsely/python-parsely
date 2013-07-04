@@ -1,9 +1,10 @@
 Parsely API Python Binding
 ==========================
 
-This library provides a pure Python interface for the Parsely API.
-The documentation, on which this binding is based, can be found at
-http://parsely.com/api/api_ref.html
+This library provides a pure Python interface for the
+[Parsely API](http://parsely.com/api).
+The documentation, on which this binding is based, can be found
+[here](http://parsely.com/api/api_ref.html)
 
 Installation
 ------------
@@ -15,7 +16,7 @@ python-parsely is available on PyPI. To download it, use pip:
 Getting the Code
 ----------------
 
-Git clone this repository - it's the primary source of the python-parsely code.
+`git clone` this repository - it's the primary source of the python-parsely code.
 
     git clone http://github.com/emmett9001/python-parsely.git
 
