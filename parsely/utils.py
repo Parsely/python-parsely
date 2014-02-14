@@ -1,7 +1,7 @@
 import json
 
 import tornado.gen
-from tornado.httpclient import HTTPClient
+from tornado.httpclient import HTTPClient, AsyncHTTPClient
 
 
 def async(func):
@@ -61,11 +61,34 @@ class ParselyAPIConnection():
             if options[k]:
                 url += "%s=%s&" % (k, options[k])
 
-        ret = HTTPClient().fetch(url, method="GET", validate_cert=True)
-
-        if ret.code == 200:
-            js = json.loads(ret.body)
-            return js
+        if _callback:
+            def __callback(response):
+                result = json.loads(response.body)
+                _callback(result)
+                self._end_request_handler(result, response.error)
+            AsyncHTTPClient().fetch(url, __callback, method="GET", validate_cert=True)
+            self._should_stop_ioloop_on_finish = True
+            if tornado.ioloop.IOLoop.instance()._running:
+                self._should_stop_ioloop_on_finish = False
+            else:
+                tornado.ioloop.IOLoop.instance().start()
+            return
         else:
-            print "Error status %d" % ret.status_code
-            return None
+            ret = HTTPClient().fetch(url, method="GET", validate_cert=True)
+
+        js = json.loads(ret.body)
+        return js
+
+    def _end_request_handler(self, response, error):
+        """
+        Helper, called once an asynchronous request ends
+
+        Stops the IOLoop that was started when the async request was
+        initialized
+
+        Args:
+        response (Dict) -- Dictionary representing the returned JSON
+        error           -- The request error, if any
+        """
+        if self._should_stop_ioloop_on_finish:
+            tornado.ioloop.IOLoop.instance().stop()

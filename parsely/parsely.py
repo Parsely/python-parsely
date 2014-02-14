@@ -20,18 +20,33 @@ class Parsely():
             return False
         return True
 
+    def build_callback(self, datafunc, _callback=None):
+        def handle(res):
+            res = datafunc(res)
+            if not _callback:
+                return res
+            _callback(res)
+        return handle
+
     @valid_kwarg(aspect_map.keys())
-    def analytics(self, aspect="posts", **kwargs):
+    def analytics(self, aspect="posts", _callback=None, **kwargs):
+        handler = self.build_callback(
+            lambda res: [aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
+            _callback)
         options = _format_analytics_args(**kwargs)
+        res = self.conn._request_endpoint('/analytics/%s' % aspect, options,
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
-        res = self.conn._request_endpoint('/analytics/%s' % aspect, options)
-        return [aspect_map[aspect].new_from_json_dict(x) for x in res['data']]
-
-    def post_detail(self, post, days=''):
+    def post_detail(self, post, days='', _callback=None):
         url = post.url if hasattr(post, 'url') else post
+        handler = self.build_callback(
+            lambda res: Post.new_from_json_dict(res['data'][0]),
+            _callback)
         res = self.conn._request_endpoint('/analytics/post/detail',
-                                          {'url': url, 'days': days})
-        return Post.new_from_json_dict(res['data'][0])
+                                          {'url': url, 'days': days},
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"])
     def meta_detail(self, meta_obj, aspect="author", **kwargs):

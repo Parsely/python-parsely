@@ -2,8 +2,6 @@ from datetime import datetime
 import unittest
 import random
 
-import tornado.web
-
 import parsely
 from recommendations import User
 from secret import secrets
@@ -74,9 +72,17 @@ class TestParselyBindings(unittest.TestCase):
         r = self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/')
         self.assertTrue(r.title == "Inside science: Selling and upsizing the meal")
 
+        def handle(res):
+            self.assertTrue(r.title == "Inside science: Selling and upsizing the meal")
+        self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/', _callback=handle)
+
     def test_analytics(self):
         r = self.p.analytics(aspect="authors")
         self.assertTrue(r[7].hits > 0)
+
+        def handle(result):
+            self.assertTrue(result[7].hits > 0)
+        r = self.p.analytics(aspect="authors")
 
     def test_analytics_one_pubdate(self):
         with self.assertRaises(ValueError):
