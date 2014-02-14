@@ -1,5 +1,14 @@
-import requests
 import json
+
+import tornado.gen
+from tornado.httpclient import HTTPClient
+
+
+def async(func):
+    @tornado.gen.coroutine
+    def inner(*args, **kwargs):
+        raise tornado.gen.Return(func(*args, **kwargs))
+    return inner
 
 
 def _format_analytics_args(days=14, start=None, end=None, pub_start=None,
@@ -45,16 +54,18 @@ class ParselyAPIConnection():
         self.apikey = apikey
         self.secret = secret
 
-    def _request_endpoint(self, endpoint, options={}):
+    def _request_endpoint(self, endpoint, options={}, _callback=None, async=False):
         url = self.rooturl + endpoint + "?apikey=%s&" % self.apikey
         url += "secret=%s&" % self.secret if self.secret else ""
         for k in options.keys():
             if options[k]:
                 url += "%s=%s&" % (k, options[k])
-        r = requests.get(url)
-        if r.status_code == 200:
-            js = json.loads(r.text)
+
+        ret = HTTPClient().fetch(url, method="GET", validate_cert=True)
+
+        if ret.code == 200:
+            js = json.loads(ret.body)
             return js
         else:
-            print "Error status %d" % r.status_code
+            print "Error status %d" % ret.status_code
             return None
