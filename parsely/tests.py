@@ -1,9 +1,11 @@
+from datetime import datetime
 import unittest
 import random
 
 import parsely
 from recommendations import User
 from secret import secrets
+
 
 class TestParselyBindings(unittest.TestCase):
     def setUp(self):
@@ -73,6 +75,10 @@ class TestParselyBindings(unittest.TestCase):
     def test_analytics(self):
         r = self.p.analytics(aspect="authors")
         self.assertTrue(r[7].hits > 0)
+
+    def test_analytics_one_pubdate(self):
+        with self.assertRaises(ValueError):
+            self.p.analytics(aspect="authors", pub_start=datetime(2013, 10, 01))
 
     def test_invalid_aspect(self):
         """when passed an invalid aspect, parsely should not return"""

@@ -5,3 +5,4 @@ MANIFEST
 build/
 dist/
 secret.py
+nohup.out

@@ -2,13 +2,14 @@ import requests
 import json
 
 
-def _format_analytics_args(days, start, end, pub_start,
-                                pub_end, sort, limit, page):
+def _format_analytics_args(days=14, start=None, end=None, pub_start=None,
+                           pub_end=None, sort="_hits", limit=10, page=1):
     dates = _format_date_args(start, end, pub_start, pub_end)
     rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
     return dict(dates.items() + rest.items())
 
-def _format_date_args(start, end, pub_start, pub_end):
+
+def _format_date_args(start=None, end=None, pub_start=None, pub_end=None):
     if _require_both(start, end):
         raise ValueError("start and end must be specified together")
     start = start.strftime("%Y-%m-%d") if start else ''
@@ -20,10 +21,12 @@ def _format_date_args(start, end, pub_start, pub_end):
     pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
 
     return {'period_start': start, 'period_end': end,
-        'pub_date_start': pub_start, 'pub_date_end': pub_end}
+            'pub_date_start': pub_start, 'pub_date_end': pub_end}
+
 
 def _require_both(first, second):
     return bool(first) != bool(second)
+
 
 def valid_kwarg(aspects, arg_name=""):
     def _valid_aspect(func):
