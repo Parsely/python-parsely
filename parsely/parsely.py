@@ -49,7 +49,7 @@ class Parsely():
         return handler(res) if not _callback else None
 
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"])
-    def meta_detail(self, meta_obj, aspect="author", **kwargs):
+    def meta_detail(self, meta_obj, aspect="author", _callback=None, **kwargs):
         value = getattr(meta_obj, aspect) if hasattr(meta_obj, aspect) else meta_obj
         options = _format_analytics_args(**kwargs)
 
