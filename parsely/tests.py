@@ -31,14 +31,27 @@ class TestParselyBindings(unittest.TestCase):
         r = self.p.related(self.train_link)
         self.assertTrue(r[3].title != "")
 
+        def handle(res):
+            self.assertTrue(res[3].title != "")
+        self.p.related(self.train_link, _callback=handle)
+
     def test_search(self):
         s = self.p.search("security", limit=4)
         self.assertTrue(s[3].title != "")
+
+        def handle(res):
+            self.assertTrue(res[3].title != "")
+        self.p.search("security", limit=4, _callback=handle)
 
     def test_realtime(self):
         r = self.p.realtime(limit=4)
         self.assertTrue(r[3].title != "")
         self.assertTrue(len(r) == 4)
+
+        def handle(res):
+            self.assertTrue(res[3].title != "")
+            self.assertTrue(len(res) == 4)
+        self.p.realtime(limit=4, _callback=handle)
 
     def test_shares(self):
         s = self.p.shares(aspect="authors")

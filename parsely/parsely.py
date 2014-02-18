@@ -81,44 +81,62 @@ class Parsely():
     @valid_kwarg(ref_types, arg_name="ref_type")
     @valid_kwarg(aspect_map.keys(), arg_name="meta")
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
-                       days=3, **kwargs):
+                       days=3, _callback=None, **kwargs):
         dates = _format_date_args(**kwargs)
         options = {'section': section, 'domain': domain, 'days': days}
 
         endpoint = '/referrers/%s/%s' % (ref_type, meta)
+
+        handler = self._build_callback(
+            lambda res: [aspect_map[meta].new_from_json_dict(x) for x in res['data']],
+            _callback)
         res = self.conn._request_endpoint(endpoint,
-                                          dict(options.items() + dates.items()))
-        return [aspect_map[meta].new_from_json_dict(x) for x in res['data']]
+                                          dict(options.items() + dates.items()),
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
     @valid_kwarg(ref_types, arg_name="ref_type")
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"], arg_name="meta")
     def referrers_meta_detail(self, meta_obj, ref_type="social", meta="author",
-                              domain='', days=3, **kwargs):
+                              domain='', days=3, _callback=None, **kwargs):
         value = getattr(meta_obj, meta) if hasattr(meta_obj, meta) else meta_obj
 
         dates = _format_date_args(**kwargs)
         options = {'domain': domain, 'days': days}
 
-        res = self.conn._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
-                                          dict(options.items() + dates.items()))
-        return [Post.new_from_json_dict(x) for x in res['data']]
+        handler = self._build_callback(
+            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            _callback)
 
-    def referrers_post_detail(self, post, days=3, **kwargs):
+        res = self.conn._request_endpoint('/referrers/%s/%s/%s/detail' % (ref_type, meta, value),
+                                          dict(options.items() + dates.items()),
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
+
+    def referrers_post_detail(self, post, days=3, _callback=None, **kwargs):
         url = post.url if hasattr(post, 'url') else post
         dates = _format_date_args(**kwargs)
         options = {'days': days, 'url': url}
 
+        handler = self._build_callback(
+            lambda res: [Referrer.new_from_json_dict(x) for x in res['data']],
+            _callback)
         res = self.conn._request_endpoint('/referrers/post/detail',
-                                          dict(options.items() + dates.items()))
-        return [Referrer.new_from_json_dict(x) for x in res['data']]
+                                          dict(options.items() + dates.items()),
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
     @valid_kwarg(["posts", "authors"])
     def shares(self, aspect="posts", days=14, start=None,
-               end=None, limit=10, page=1, post=''):
+               end=None, limit=10, page=1, post='', _callback=None):
         url = post.url if hasattr(post, 'url') else post
         if url:
-            res = self.conn._request_endpoint('/shares/post/detail', {'url': url})
-            return Shares.new_from_json_dict(res['data'][0])
+            handler = self._build_callback(
+                lambda res: Shares.new_from_json_dict(res['data'][0]),
+                _callback)
+            res = self.conn._request_endpoint('/shares/post/detail', {'url': url},
+                                              _callback=handler if _callback else None)
+            return handler(res) if not _callback else None
         else:
             if _require_both(start, end):
                 raise ValueError("Start and end must be specified together")
@@ -126,29 +144,45 @@ class Parsely():
             start = start.strftime("%Y-%m-%d") if start else ''
             end = end.strftime("%Y-%m-%d") if end else ''
 
+            handler = self._build_callback(
+                lambda res: [aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
+                _callback)
             res = self.conn._request_endpoint('/shares/%s' % aspect,
                                               {'pub_days': days,
                                                'pub_date_start': start,
                                                'pub_date_end': end,
-                                               'limit': 10, 'page': 1})
+                                               'limit': 10, 'page': 1},
+                                              _callback=handler if _callback else None)
 
-            return [aspect_map[aspect].new_from_json_dict(x) for x in res['data']]
+            return handler(res) if not _callback else None
 
     @valid_kwarg(aspect_map.keys())
-    def realtime(self, aspect="posts", per=None, limit=10, page=1):
+    def realtime(self, aspect="posts", per=None, limit=10, page=1, _callback=None):
         options = {'limit': limit, 'page': page}
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
 
-        res = self.conn._request_endpoint('/realtime/%s' % aspect, options)
-        return [Post.new_from_json_dict(x) for x in res['data']]
+        handler = self._build_callback(
+            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            _callback)
+        res = self.conn._request_endpoint('/realtime/%s' % aspect, options,
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
-    def related(self, url, days=14, limit=10, page=1, section=""):
+    def related(self, url, days=14, limit=10, page=1, section="", _callback=None):
         options = {'url': url, 'days': days, 'limit': limit, 'page': page}
-        res = self.conn._request_endpoint('/related', options)
-        return [Post.new_from_json_dict(x) for x in res['data']]
+        handler = self._build_callback(
+            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            _callback)
+        res = self.conn._request_endpoint('/related', options,
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
-    def search(self, query, limit=10, page=1):
+    def search(self, query, limit=10, page=1, _callback=None):
+        handler = self._build_callback(
+            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            _callback)
         res = self.conn._request_endpoint('/search', {'q': query, 'limit': limit,
-                                                      'page': page})
-        return [Post.new_from_json_dict(x) for x in res['data']]
+                                                      'page': page},
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
