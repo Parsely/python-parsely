@@ -20,7 +20,7 @@ class Parsely():
             return False
         return True
 
-    def build_callback(self, datafunc, _callback=None):
+    def _build_callback(self, datafunc, _callback=None):
         def handle(res):
             res = datafunc(res)
             if not _callback:
@@ -30,7 +30,7 @@ class Parsely():
 
     @valid_kwarg(aspect_map.keys())
     def analytics(self, aspect="posts", _callback=None, **kwargs):
-        handler = self.build_callback(
+        handler = self._build_callback(
             lambda res: [aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
             _callback)
         options = _format_analytics_args(**kwargs)
@@ -40,7 +40,7 @@ class Parsely():
 
     def post_detail(self, post, days='', _callback=None):
         url = post.url if hasattr(post, 'url') else post
-        handler = self.build_callback(
+        handler = self._build_callback(
             lambda res: Post.new_from_json_dict(res['data'][0]),
             _callback)
         res = self.conn._request_endpoint('/analytics/post/detail',
@@ -53,21 +53,30 @@ class Parsely():
         value = getattr(meta_obj, aspect) if hasattr(meta_obj, aspect) else meta_obj
         options = _format_analytics_args(**kwargs)
 
-        res = self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value), options)
-        return [Post.new_from_json_dict(x) for x in res['data']]
+        handler = self._build_callback(
+            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            _callback)
+        res = self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value),
+                                          options, _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
     @valid_kwarg(ref_types, arg_name="ref_type")
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
-                  **kwargs):
+                  _callback=None, **kwargs):
         dates = _format_date_args(**kwargs)
         options = {'section': section, 'tag': tag,
                    'domain': domain, 'days': days}
 
+        def inner(res):
+            for r in res['data']:
+                r['ref_type'] = ref_type
+            return [Referrer.new_from_json_dict(x) for x in res['data']]
+        handler = self._build_callback(inner, _callback)
+
         res = self.conn._request_endpoint('/referrers/%s' % ref_type,
-                                          dict(options.items() + dates.items()))
-        for r in res['data']:
-            r['ref_type'] = ref_type
-        return [Referrer.new_from_json_dict(x) for x in res['data']]
+                                          dict(options.items() + dates.items()),
+                                          _callback=handler if _callback else None)
+        return handler(res) if not _callback else None
 
     @valid_kwarg(ref_types, arg_name="ref_type")
     @valid_kwarg(aspect_map.keys(), arg_name="meta")

@@ -44,25 +44,52 @@ class TestParselyBindings(unittest.TestCase):
         s = self.p.shares(aspect="authors")
         self.assertTrue(s[3].name != "")
 
+        def handle(res):
+            self.assertTrue(res[3].name != "")
+        self.p.shares(aspect="authors", _callback=handle)
+
     def test_shares_detail(self):
         s = self.p.shares(post=self.train_link)
         self.assertTrue(s.total > 0)
+
+        def handle(res):
+            self.assertTrue(res.total > 0)
+        self.p.shares(post=self.train_link, _callback=handle)
 
     def test_referrers_post_detail(self):
         r = self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/')
         self.assertTrue(r[0].hits > 0)
 
+        def handle(res):
+            self.assertTrue(res[0].hits > 0)
+        self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/',
+                                     _callback=handle)
+
     def test_referrers_meta_detail(self):
         r = self.p.referrers_meta_detail('Ars Staff', meta="author")
         self.assertEquals(r[3].author, "Ars Staff")
+
+        def handle(res):
+            self.assertEquals(res[3].author, "Ars Staff")
+        self.p.referrers_meta_detail('Ars Staff', meta="author", _callback=handle)
 
     def test_referrers_meta(self):
         r = self.p.referrers_meta()
         self.assertTrue(r[0].hits > 0)
 
+        def handle(res):
+            self.assertTrue(res[0].hits > 0)
+        self.p.referrers_meta(_callback=handle)
+
     def test_referrers(self):
         r = self.p.referrers(tag='copyright')
         self.assertTrue(r[2].hits > 0)
+        self.assertTrue(r[2].ref_type == 'social')
+
+        def handle(res):
+            self.assertTrue(res[2].hits > 0)
+            self.assertTrue(res[2].ref_type == 'social')
+        self.p.referrers(tag='copyright', _callback=handle)
 
     def test_meta_detail(self):
         r = self.p.meta_detail('Technology Lab', aspect="section")
