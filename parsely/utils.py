@@ -48,6 +48,15 @@ def valid_kwarg(aspects, arg_name=""):
     return _valid_aspect
 
 
+def _build_callback(datafunc, _callback=None):
+    def handle(res):
+        res = datafunc(res)
+        if not _callback:
+            return res
+        _callback(res)
+    return handle
+
+
 class ParselyAPIConnection():
     def __init__(self, apikey, secret=None, root=None):
         self.rooturl = root if root else "http://api.parsely.com/v2"

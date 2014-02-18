@@ -19,13 +19,26 @@ class TestParselyBindings(unittest.TestCase):
         t = self.user.train(self.train_link)
         self.assertEquals(t, True)
 
+        def handle_train(res):
+            self.assertEquals(res, True)
+        self.user.train(self.train_link, _callback=handle_train)
+
         h = self.user.history()
         self.assertEquals(h['uuid'], self.uuid)
         self.assertIn(self.train_link, h['urls'])
 
+        def handle_history(res):
+            self.assertEquals(res['uuid'], self.uuid)
+            self.assertIn(self.train_link, res['urls'])
+        self.user.history(_callback=handle_history)
+
     def test_related_user(self):
         r = self.user.related()
         self.assertTrue(r[3].title != "")
+
+        def handle(res):
+            self.assertTrue(res[3].title != "")
+        self.user.related(_callback=handle)
 
     def test_related_url(self):
         r = self.p.related(self.train_link)
