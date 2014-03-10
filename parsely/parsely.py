@@ -3,12 +3,11 @@ from utils import _format_analytics_args, _format_date_args, _require_both
 from utils import ParselyAPIConnection, valid_kwarg, _build_callback
 
 
-aspect_map = {"posts": Post, "authors": Author, "sections": Section,
-              "topics": Topic, "tags": Tag}
-ref_types = ['internal', 'social', 'search', 'other']
-
-
 class Parsely():
+    ref_types = ['internal', 'social', 'search', 'other']
+    aspect_map = {"posts": Post, "authors": Author, "sections": Section,
+                  "topics": Topic, "tags": Tag}
+
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)
         if not self.authenticated():
@@ -23,7 +22,7 @@ class Parsely():
     @valid_kwarg(aspect_map.keys())
     def analytics(self, aspect="posts", _callback=None, **kwargs):
         handler = _build_callback(
-            lambda res: [aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
+            lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
             _callback)
         options = _format_analytics_args(**kwargs)
         res = self.conn._request_endpoint('/analytics/%s' % aspect, options,
@@ -80,7 +79,7 @@ class Parsely():
         endpoint = '/referrers/%s/%s' % (ref_type, meta)
 
         handler = _build_callback(
-            lambda res: [aspect_map[meta].new_from_json_dict(x) for x in res['data']],
+            lambda res: [self.aspect_map[meta].new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint(endpoint,
                                           dict(options.items() + dates.items()),
@@ -137,7 +136,7 @@ class Parsely():
             end = end.strftime("%Y-%m-%d") if end else ''
 
             handler = _build_callback(
-                lambda res: [aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
+                lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
                 _callback)
             res = self.conn._request_endpoint('/shares/%s' % aspect,
                                               {'pub_days': days,

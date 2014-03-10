@@ -1,4 +1,5 @@
 import json
+import urllib
 
 import tornado.gen
 from tornado.httpclient import HTTPClient, AsyncHTTPClient
@@ -66,9 +67,7 @@ class ParselyAPIConnection():
     def _request_endpoint(self, endpoint, options={}, _callback=None, async=False):
         url = self.rooturl + endpoint + "?apikey=%s&" % self.apikey
         url += "secret=%s&" % self.secret if self.secret else ""
-        for k in options.keys():
-            if options[k]:
-                url += "%s=%s&" % (k, options[k])
+        url += urllib.urlencode({k: v for k, v in options.iteritems() if v})
 
         if _callback:
             def __callback(response):
