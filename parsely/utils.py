@@ -63,9 +63,11 @@ class ParselyAPIConnection():
         self.secret = secret
 
     def _request_endpoint(self, endpoint, options={}, _callback=None, async=False):
-        url = self.rooturl + endpoint + "?apikey=%s&" % self.apikey
-        url += "secret=%s&" % self.secret if self.secret else ""
-        url += urllib.urlencode({k: v for k, v in options.iteritems() if v})
+        url = "{root}{endpoint}?apikey={apikey}&secret={secret}&{query}".format(
+            root=self.rooturl, endpoint=urllib.quote(endpoint),
+            apikey=self.apikey, secret=self.secret if self.secret else "",
+            query=urllib.urlencode({k: v for k, v in options.iteritems() if v})
+        )
 
         if _callback:
             def __callback(response):
