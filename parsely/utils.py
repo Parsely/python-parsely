@@ -12,30 +12,37 @@ def async(func):
     return inner
 
 
-def _format_analytics_args(days=14, start=None, end=None, pub_start=None,
-                           pub_end=None, sort="_hits", limit=10, page=1):
-    dates = _format_date_args(start, end, pub_start, pub_end)
-    rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
-    return dict(dates.items() + rest.items())
+class BaseParselyClient():
+    def _format_analytics_args(self, days=14, start=None, end=None, pub_start=None,
+                               pub_end=None, sort="_hits", limit=10, page=1):
+        dates = self._format_date_args(start, end, pub_start, pub_end)
+        rest = {'sort': sort, 'limit': limit, 'page': page, 'days': days}
+        return dict(dates.items() + rest.items())
 
+    def _format_date_args(self, start=None, end=None, pub_start=None, pub_end=None):
+        if self._require_both(start, end):
+            raise ValueError("start and end must be specified together")
+        start = start.strftime("%Y-%m-%d") if start else ''
+        end = end.strftime("%Y-%m-%d") if end else ''
 
-def _format_date_args(start=None, end=None, pub_start=None, pub_end=None):
-    if _require_both(start, end):
-        raise ValueError("start and end must be specified together")
-    start = start.strftime("%Y-%m-%d") if start else ''
-    end = end.strftime("%Y-%m-%d") if end else ''
+        if self._require_both(pub_start, pub_end):
+            raise ValueError("pub start and pub end must be specified together")
+        pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
+        pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
 
-    if _require_both(pub_start, pub_end):
-        raise ValueError("pub start and pub end must be specified together")
-    pub_start = pub_start.strftime("%Y-%m-%d") if pub_start else ''
-    pub_end = pub_end.strftime("%Y-%m-%d") if pub_end else ''
+        return {'period_start': start, 'period_end': end,
+                'pub_date_start': pub_start, 'pub_date_end': pub_end}
 
-    return {'period_start': start, 'period_end': end,
-            'pub_date_start': pub_start, 'pub_date_end': pub_end}
+    def _require_both(self, first, second):
+        return bool(first) != bool(second)
 
-
-def _require_both(first, second):
-    return bool(first) != bool(second)
+    def _build_callback(self, datafunc, _callback=None):
+        def handle(res):
+            res = datafunc(res)
+            if not _callback:
+                return res
+            _callback(res)
+        return handle
 
 
 def valid_kwarg(aspects, arg_name=""):
@@ -47,15 +54,6 @@ def valid_kwarg(aspects, arg_name=""):
             return func(*args, **kwargs)
         return inner
     return _valid_aspect
-
-
-def _build_callback(datafunc, _callback=None):
-    def handle(res):
-        res = datafunc(res)
-        if not _callback:
-            return res
-        _callback(res)
-    return handle
 
 
 class ParselyAPIConnection():

@@ -1,9 +1,8 @@
 from models import Post, Author, Section, Topic, Tag, Referrer, Shares
-from utils import _format_analytics_args, _format_date_args, _require_both
-from utils import ParselyAPIConnection, valid_kwarg, _build_callback
+from utils import ParselyAPIConnection, valid_kwarg, BaseParselyClient
 
 
-class Parsely():
+class Parsely(BaseParselyClient):
     ref_types = ['internal', 'social', 'search', 'other']
     aspect_map = {"posts": Post, "authors": Author, "sections": Section,
                   "topics": Topic, "tags": Tag}
@@ -21,17 +20,17 @@ class Parsely():
 
     @valid_kwarg(aspect_map.keys())
     def analytics(self, aspect="posts", _callback=None, **kwargs):
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
             _callback)
-        options = _format_analytics_args(**kwargs)
+        options = self._format_analytics_args(**kwargs)
         res = self.conn._request_endpoint('/analytics/%s' % aspect, options,
                                           _callback=handler if _callback else None)
         return handler(res) if not _callback else None
 
     def post_detail(self, post, days='', _callback=None):
         url = post.url if hasattr(post, 'url') else post
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: Post.new_from_json_dict(res['data'][0]),
             _callback)
         res = self.conn._request_endpoint('/analytics/post/detail',
@@ -42,9 +41,9 @@ class Parsely():
     @valid_kwarg([x[:-1] for x in aspect_map.keys() if x is not "posts"])
     def meta_detail(self, meta_obj, aspect="author", _callback=None, **kwargs):
         value = getattr(meta_obj, aspect) if hasattr(meta_obj, aspect) else meta_obj
-        options = _format_analytics_args(**kwargs)
+        options = self._format_analytics_args(**kwargs)
 
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/analytics/%s/%s/detail' % (aspect, value),
@@ -54,7 +53,7 @@ class Parsely():
     @valid_kwarg(ref_types, arg_name="ref_type")
     def referrers(self, ref_type="social", section='', tag='', domain='', days=3,
                   _callback=None, **kwargs):
-        dates = _format_date_args(**kwargs)
+        dates = self._format_date_args(**kwargs)
         options = {'section': section, 'tag': tag,
                    'domain': domain, 'days': days}
 
@@ -62,7 +61,7 @@ class Parsely():
             for r in res['data']:
                 r['ref_type'] = ref_type
             return [Referrer.new_from_json_dict(x) for x in res['data']]
-        handler = _build_callback(inner, _callback)
+        handler = self._build_callback(inner, _callback)
 
         res = self.conn._request_endpoint('/referrers/%s' % ref_type,
                                           dict(options.items() + dates.items()),
@@ -73,12 +72,12 @@ class Parsely():
     @valid_kwarg(aspect_map.keys(), arg_name="meta")
     def referrers_meta(self, ref_type="social", meta="posts", section='', domain='',
                        days=3, _callback=None, **kwargs):
-        dates = _format_date_args(**kwargs)
+        dates = self._format_date_args(**kwargs)
         options = {'section': section, 'domain': domain, 'days': days}
 
         endpoint = '/referrers/%s/%s' % (ref_type, meta)
 
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [self.aspect_map[meta].new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint(endpoint,
@@ -92,10 +91,10 @@ class Parsely():
                               domain='', days=3, _callback=None, **kwargs):
         value = getattr(meta_obj, meta) if hasattr(meta_obj, meta) else meta_obj
 
-        dates = _format_date_args(**kwargs)
+        dates = self._format_date_args(**kwargs)
         options = {'domain': domain, 'days': days}
 
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
 
@@ -106,10 +105,10 @@ class Parsely():
 
     def referrers_post_detail(self, post, days=3, _callback=None, **kwargs):
         url = post.url if hasattr(post, 'url') else post
-        dates = _format_date_args(**kwargs)
+        dates = self._format_date_args(**kwargs)
         options = {'days': days, 'url': url}
 
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Referrer.new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/referrers/post/detail',
@@ -122,20 +121,20 @@ class Parsely():
                end=None, limit=10, page=1, post='', _callback=None):
         url = post.url if hasattr(post, 'url') else post
         if url:
-            handler = _build_callback(
+            handler = self._build_callback(
                 lambda res: Shares.new_from_json_dict(res['data'][0]),
                 _callback)
             res = self.conn._request_endpoint('/shares/post/detail', {'url': url},
                                               _callback=handler if _callback else None)
             return handler(res) if not _callback else None
         else:
-            if _require_both(start, end):
+            if self._require_both(start, end):
                 raise ValueError("Start and end must be specified together")
 
             start = start.strftime("%Y-%m-%d") if start else ''
             end = end.strftime("%Y-%m-%d") if end else ''
 
-            handler = _build_callback(
+            handler = self._build_callback(
                 lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
                 _callback)
             res = self.conn._request_endpoint('/shares/%s' % aspect,
@@ -153,7 +152,7 @@ class Parsely():
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
 
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/realtime/%s' % aspect, options,
@@ -162,7 +161,7 @@ class Parsely():
 
     def related(self, url, days=14, limit=10, page=1, section="", _callback=None):
         options = {'url': url, 'days': days, 'limit': limit, 'page': page}
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/related', options,
@@ -170,7 +169,7 @@ class Parsely():
         return handler(res) if not _callback else None
 
     def search(self, query, limit=10, page=1, _callback=None):
-        handler = _build_callback(
+        handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/search', {'q': query, 'limit': limit,
