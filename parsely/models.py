@@ -8,7 +8,9 @@ class Post():
                  tags=None,
                  hits=None,
                  shares=None,
-                 thumb_urls=None,
+                 thumb_url_medium=None,
+                 image_url=None,
+                 visitors=None,
                  metadata=None):
         self.url = url
         self.title = title
@@ -18,8 +20,10 @@ class Post():
         self.tags = tags
         self.hits = hits
         self.shares = shares
-        self.thumb_urls = thumb_urls
+        self.image_url = image_url
+        self.thumb_url_medium = thumb_url_medium
         self.metadata = metadata
+        self.visitors = visitors
 
     @staticmethod
     def new_from_json_dict(data):
@@ -31,6 +35,9 @@ class Post():
                     tags=data.get('tags', None),
                     hits=data.get('_hits', None),
                     shares=data.get('_shares', None),
+                    visitors=data.get('visitors', None),
+                    thumb_url_medium=data.get('thumb_url_medium', None),
+                    image_url=data.get('image_url', None),
                     metadata=data.get('metadata', None))
 
 

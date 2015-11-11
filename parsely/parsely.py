@@ -143,7 +143,6 @@ class Parsely(BaseParselyClient):
                                                'pub_date_end': end,
                                                'limit': 10, 'page': 1},
                                               _callback=handler if _callback else None)
-
             return handler(res) if not _callback else None
 
     @valid_kwarg(aspect_map.keys())
