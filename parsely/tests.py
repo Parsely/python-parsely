@@ -66,14 +66,6 @@ class TestParselyBindings(unittest.TestCase):
             self.assertTrue(len(res) == 4)
         self.p.realtime(limit=4, _callback=handle)
 
-    def test_shares(self):
-        s = self.p.shares(aspect="authors")
-        self.assertTrue(s[3].name != "")
-
-        def handle(res):
-            self.assertTrue(res[3].name != "")
-        self.p.shares(aspect="authors", _callback=handle)
-
     def test_shares_detail(self):
         s = self.p.shares(post=self.train_link)
         self.assertTrue(s.total > 0)
