@@ -143,7 +143,6 @@ class Parsely(BaseParselyClient):
                                                'pub_date_end': end,
                                                'limit': 10, 'page': 1},
                                               _callback=handler if _callback else None)
-
             return handler(res) if not _callback else None
 
     @valid_kwarg(aspect_map.keys())
@@ -153,7 +152,7 @@ class Parsely(BaseParselyClient):
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
 
         handler = self._build_callback(
-            lambda res: [Post.new_from_json_dict(x) for x in res['data']],
+            lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
             _callback)
         res = self.conn._request_endpoint('/realtime/%s' % aspect, options,
                                           _callback=handler if _callback else None)
