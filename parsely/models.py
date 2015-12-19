@@ -82,7 +82,7 @@ class Referrer(Meta):
 
     @staticmethod
     def new_from_json_dict(data):
-        return Referrer(name=data.get('tag', None),
+        return Referrer(name=data.get('name', None),
                         hits=data.get('_hits', None),
                         ref_type=data.get('ref_type', data.get('type', None)))
 
