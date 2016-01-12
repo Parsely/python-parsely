@@ -5,7 +5,7 @@ from utils import ParselyAPIConnection, valid_kwarg, BaseParselyClient
 class Parsely(BaseParselyClient):
     ref_types = ['internal', 'social', 'search', 'other']
     aspect_map = {"posts": Post, "authors": Author, "sections": Section,
-                  "topics": Topic, "tags": Tag}
+                  "topics": Topic, "tags": Tag, "referrers": Referrer}
 
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)

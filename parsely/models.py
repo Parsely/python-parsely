@@ -82,9 +82,9 @@ class Referrer(Meta):
 
     @staticmethod
     def new_from_json_dict(data):
-        return Referrer(name=data.get('name', None),
+        return Referrer(name=data.get('name', data.get('title', None)),
                         hits=data.get('_hits', None),
-                        ref_type=data.get('ref_type', data.get('type', None)))
+                        ref_type=data.get('ref_type', data.get('type', data.get('category', None))))
 
 
 class Shares():
