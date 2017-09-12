@@ -12,7 +12,7 @@ class TestParselyBindings(unittest.TestCase):
         self.apikey = 'arstechnica.com'
         self.uuid = 'user%d' % random.randint(1000, 9999)
         self.p = parsely.Parsely(self.apikey, secrets[self.apikey])
-        self.train_link = 'http://arstechnica.com/gadgets/2013/04/tunein-radio-app-update-makes-it-easier-for-users-to-discover-new-music/'
+        self.train_link = 'https://arstechnica.com/gadgets/2017/09/android-8-0-oreo-thoroughly-reviewed/'#'http://arstechnica.com/gadgets/2013/04/tunein-radio-app-update-makes-it-easier-for-users-to-discover-new-music/'
         self.user = User(self.p, self.uuid)
 
     def test_train(self):
@@ -75,13 +75,13 @@ class TestParselyBindings(unittest.TestCase):
         self.p.shares(post=self.train_link, _callback=handle)
 
     def test_referrers_post_detail(self):
-        r = self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/')
+        r = self.p.referrers_post_detail('https://arstechnica.com/gaming/2017/09/the-pc-issues-that-need-fixing-before-final-fantasy-xv-launches-on-windows/')#'http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/')
         self.assertTrue(r[0].hits > 0)
 
         def handle(res):
             self.assertTrue(res[0].hits > 0)
-        self.p.referrers_post_detail('http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/',
-                                     _callback=handle)
+        self.p.referrers_post_detail('https://arstechnica.com/gaming/2017/09/the-pc-issues-that-need-fixing-before-final-fantasy-xv-launches-on-windows/', _callback=handle)#'http://arstechnica.com/information-technology/2013/04/memory-that-never-forgets-non-volatile-dimms-hit-the-market/',
+
 
     def test_referrers_meta_detail(self):
         r = self.p.referrers_meta_detail('Ars Staff', meta="author")
@@ -110,20 +110,22 @@ class TestParselyBindings(unittest.TestCase):
         self.p.referrers(tag='copyright', _callback=handle)
 
     def test_meta_detail(self):
-        r = self.p.meta_detail('Technology Lab', aspect="section")
-        self.assertEquals(r[3].section, "Technology Lab")
+        r = self.p.meta_detail('Tech', aspect="section")
+        self.assertEquals(r[3].section, "Tech")
 
         def handle(res):
-            self.assertEquals(res[3].section, "Technology Lab")
-        self.p.meta_detail('Technology Lab', aspect="section", _callback=handle)
+            self.assertEquals(res[3].section, "Tech")
+        self.p.meta_detail('Tech', aspect="section", _callback=handle)
 
     def test_post_detail(self):
-        r = self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/')
-        self.assertTrue(r.title == "Inside science: Selling and upsizing the meal")
+        r = self.p.post_detail('https://arstechnica.com/gadgets/2017/09/android-8-0-oreo-thoroughly-reviewed/')
+        self.assertTrue(r.title == "Android 8.0 Oreo, thoroughly reviewed")
+        self.assertTrue(r.visitors > 0)
 
         def handle(res):
-            self.assertTrue(res.title == "Inside science: Selling and upsizing the meal")
-        self.p.post_detail('http://arstechnica.com/science/2013/04/inside-science-selling-and-upsizing-the-meal/', _callback=handle)
+            self.assertTrue(res.title == "Android 8.0 Oreo, thoroughly reviewed")
+            self.assertTrue(res.visitors > 0)
+        self.p.post_detail('https://arstechnica.com/gadgets/2017/09/android-8-0-oreo-thoroughly-reviewed/', _callback=handle)
 
     def test_analytics(self):
         r = self.p.analytics(aspect="authors")
@@ -135,7 +137,7 @@ class TestParselyBindings(unittest.TestCase):
 
     def test_analytics_one_pubdate(self):
         with self.assertRaises(ValueError):
-            self.p.analytics(aspect="authors", pub_start=datetime(2013, 10, 01))
+            self.p.analytics(aspect="authors", pub_start=datetime(2017, 9, 04))#2013, 10, 01))
 
     def test_invalid_aspect(self):
         """when passed an invalid aspect, parsely should not return"""
@@ -155,6 +157,35 @@ class TestParselyBindings(unittest.TestCase):
             pass
         self.assertTrue(r == "sentinel")
 
+    def test_analytics_sort(self):
+        r = self.p.analytics(aspect="posts", sort="mobile_views")
+        self.assertTrue(r[0].mobile_views > 0)
+
+        def handle(res):
+            self.assertTrue(res[0].mobile_views >0)
+        self.p.analytics(aspect="posts", sort="mobile_views", _callback=handle)
+
+    def test_related_boost(self):
+        r = self.p.related(self.train_link, boost="visitors_returning")
+        self.assertTrue(r[0].title != "")
+
+        def handle(res):
+            self.assertTrue(res[0].title != "")
+
+        self.p.related(self.train_link, boost="visitors_returning", _callback=handle)
+
+    def test_search_boost(self):
+        s = self.p.search("security", limit=4, boost="visitors_new")
+        self.assertTrue(s[0].title != "")
+
+        def handle(res):
+            self.assertTrue(res[0].title != "")
+
+        self.p.search("security", limit=4, boost = "visitors_new", _callback=handle)
+
+    def test_wrong_metric(self):
+        with self.assertRaises(ValueError):
+            r = self.p.analytics(aspect="posts", sort="Mobile_view")
 
 if __name__ == '__main__':
     unittest.main()

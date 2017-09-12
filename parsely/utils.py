@@ -46,11 +46,19 @@ class BaseParselyClient():
 
 
 def valid_kwarg(aspects, arg_name=""):
+    allowed_metrics = ['views', 'mobile_views', 'tablet_views', 'desktop_views', 'visitors', 'visitors_new',
+                       'visitors_returning', 'engaged_minutes', 'avg_engaged', 'avg_engaged_new',
+                       'avg_engaged_returning', 'social_interactions', 'fb_interactions', 'tw_interactions',
+                       'li_interactions', 'pi_interactions', 'social_referrals', 'fb_referrals', 'tw_referrals',
+                       'li_referrals', 'pi_referrals']
     def _valid_aspect(func):
         def inner(*args, **kwargs):
             name = arg_name if arg_name else "aspect"
             if name in kwargs.keys() and kwargs[name] not in aspects:
-                raise ValueError("Invalid %s: %s" % (name, kwargs[name]))
+                if name in ('sort','boost'):
+                    raise ValueError("Invalid %s: %s. \nAllowed metrics: \n%s" % (name, kwargs[name],'\n'.join(str(p) for p in allowed_metrics) ))
+                else:
+                    raise ValueError("Invalid %s: %s" % (name, kwargs[name]))
             return func(*args, **kwargs)
         return inner
     return _valid_aspect

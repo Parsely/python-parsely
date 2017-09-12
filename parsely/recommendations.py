@@ -21,8 +21,8 @@ class User(BaseParselyClient):
                                           _callback=handler if _callback else None)
         return handler(res) if not _callback else None
 
-    def related(self, days=14, limit=10, page=10, section="", _callback=None):
-        options = {'uuid': self.uuid, 'days': days, 'limit': limit, 'page': page}
+    def related(self, days=14, limit=10, page=10,  boost="views", section="", _callback=None):
+        options = {'uuid': self.uuid, 'days': days, 'limit': limit, 'page': page, 'boost': boost}
         handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)

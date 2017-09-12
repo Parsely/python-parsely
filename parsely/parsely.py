@@ -1,11 +1,17 @@
-from models import Post, Author, Section, Topic, Tag, Referrer, Shares
+from models import Post, Author, Section, Tag, Referrer, Shares
 from utils import ParselyAPIConnection, valid_kwarg, BaseParselyClient
+import logging
 
 
 class Parsely(BaseParselyClient):
     ref_types = ['internal', 'social', 'search', 'other']
     aspect_map = {"posts": Post, "authors": Author, "sections": Section,
-                  "topics": Topic, "tags": Tag, "referrers": Referrer}
+                  "tags": Tag, "referrers": Referrer}
+    allowed_metrics = ['views', 'mobile_views', 'tablet_views', 'desktop_views', 'visitors', 'visitors_new',
+                       'visitors_returning', 'engaged_minutes', 'avg_engaged', 'avg_engaged_new',
+                       'avg_engaged_returning', 'social_interactions', 'fb_interactions', 'tw_interactions',
+                       'li_interactions', 'pi_interactions', 'social_referrals', 'fb_referrals', 'tw_referrals',
+                       'li_referrals', 'pi_referrals']
 
     def __init__(self, apikey, secret=None, root=None):
         self.conn = ParselyAPIConnection(apikey, secret=secret, root=root)
@@ -19,6 +25,7 @@ class Parsely(BaseParselyClient):
         return True
 
     @valid_kwarg(aspect_map.keys())
+    @valid_kwarg(allowed_metrics, arg_name="sort")
     def analytics(self, aspect="posts", _callback=None, **kwargs):
         handler = self._build_callback(
             lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
@@ -147,6 +154,8 @@ class Parsely(BaseParselyClient):
 
     @valid_kwarg(aspect_map.keys())
     def realtime(self, aspect="posts", per=None, limit=10, page=1, _callback=None):
+        logging.info("DEPRECATED. Please use / analytics / (type), as it provides more flexibility between realtime "
+                     "and historical calls, and is not limited to past 24 hours.")
         options = {'limit': limit, 'page': page}
         if per:
             options['time'] = "%dh" % per.hours if per.hours else "%dm" % per.minutes
@@ -154,12 +163,13 @@ class Parsely(BaseParselyClient):
         handler = self._build_callback(
             lambda res: [self.aspect_map[aspect].new_from_json_dict(x) for x in res['data']],
             _callback)
-        res = self.conn._request_endpoint('/realtime/%s' % aspect, options,
+        res = self.conn._request_endpoint('/analytics/%s' % aspect, options,
                                           _callback=handler if _callback else None)
         return handler(res) if not _callback else None
 
-    def related(self, url, days=14, limit=10, page=1, section="", _callback=None):
-        options = {'url': url, 'days': days, 'limit': limit, 'page': page}
+    @valid_kwarg(allowed_metrics, arg_name="boost")
+    def related(self, url, days=14, limit=10, page=1, boost="views", section="", _callback=None):
+        options = {'url': url, 'days': days, 'limit': limit, 'page': page, 'boost': boost}
         handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
@@ -167,11 +177,12 @@ class Parsely(BaseParselyClient):
                                           _callback=handler if _callback else None)
         return handler(res) if not _callback else None
 
-    def search(self, query, limit=10, page=1, _callback=None):
+    @valid_kwarg(allowed_metrics, arg_name="boost")
+    def search(self, query, limit=10, page=1, boost="views", _callback=None):
+        options = {'q': query, 'limit': limit, 'page': page, 'boost': boost}
         handler = self._build_callback(
             lambda res: [Post.new_from_json_dict(x) for x in res['data']],
             _callback)
-        res = self.conn._request_endpoint('/search', {'q': query, 'limit': limit,
-                                                      'page': page},
+        res = self.conn._request_endpoint('/search', options,
                                           _callback=handler if _callback else None)
         return handler(res) if not _callback else None

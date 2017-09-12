@@ -27,7 +27,8 @@ class Post():
 
     @staticmethod
     def new_from_json_dict(data):
-        return Post(url=data.get('url', None),
+
+        post = Post(url=data.get('url', None),
                     title=data.get('title', None),
                     section=data.get('section', None),
                     author=data.get('author', None),
@@ -39,6 +40,12 @@ class Post():
                     thumb_url_medium=data.get('thumb_url_medium', None),
                     image_url=data.get('image_url', None),
                     metadata=data.get('metadata', None))
+
+        if data.get('metrics'):
+            for metric, value in data['metrics'].items():
+                setattr(post, metric, value)
+
+        return post
 
 
 class Meta(object):
@@ -59,14 +66,6 @@ class Section(Meta):
     def new_from_json_dict(data):
         return Section(name=data.get('section', None),
                        hits=data.get('_hits', None))
-
-
-class Topic(Meta):
-    @staticmethod
-    def new_from_json_dict(data):
-        return Topic(name=data.get('topic', None),
-                     hits=data.get('_hits', None))
-
 
 class Tag(Meta):
     @staticmethod
