@@ -1,17 +1,19 @@
-class Post():
-    def __init__(self,
-                 url=None,
-                 title=None,
-                 section=None,
-                 author=None,
-                 pub_date=None,
-                 tags=None,
-                 hits=None,
-                 shares=None,
-                 thumb_url_medium=None,
-                 image_url=None,
-                 visitors=None,
-                 metadata=None):
+class Post(object):
+    def __init__(
+        self,
+        url=None,
+        title=None,
+        section=None,
+        author=None,
+        pub_date=None,
+        tags=None,
+        hits=None,
+        shares=None,
+        thumb_url_medium=None,
+        image_url=None,
+        visitors=None,
+        metadata=None,
+    ):
         self.url = url
         self.title = title
         self.section = section
@@ -28,21 +30,23 @@ class Post():
     @staticmethod
     def new_from_json_dict(data):
 
-        post = Post(url=data.get('url', None),
-                    title=data.get('title', None),
-                    section=data.get('section', None),
-                    author=data.get('author', None),
-                    pub_date=data.get('pub_date', None),
-                    tags=data.get('tags', None),
-                    hits=data.get('_hits', None),
-                    shares=data.get('_shares', None),
-                    visitors=data.get('visitors', None),
-                    thumb_url_medium=data.get('thumb_url_medium', None),
-                    image_url=data.get('image_url', None),
-                    metadata=data.get('metadata', None))
+        post = Post(
+            url=data.get("url", None),
+            title=data.get("title", None),
+            section=data.get("section", None),
+            author=data.get("author", None),
+            pub_date=data.get("pub_date", None),
+            tags=data.get("tags", None),
+            hits=data.get("_hits", None),
+            shares=data.get("_shares", None),
+            visitors=data.get("visitors", None),
+            thumb_url_medium=data.get("thumb_url_medium", None),
+            image_url=data.get("image_url", None),
+            metadata=data.get("metadata", None),
+        )
 
-        if data.get('metrics'):
-            for metric, value in data['metrics'].items():
+        if data.get("metrics"):
+            for metric, value in data["metrics"].items():
                 setattr(post, metric, value)
 
         return post
@@ -57,21 +61,19 @@ class Meta(object):
 class Author(Meta):
     @staticmethod
     def new_from_json_dict(data):
-        return Author(name=data.get('author', None),
-                      hits=data.get('_hits', None))
+        return Author(name=data.get("author", None), hits=data.get("_hits", None))
 
 
 class Section(Meta):
     @staticmethod
     def new_from_json_dict(data):
-        return Section(name=data.get('section', None),
-                       hits=data.get('_hits', None))
+        return Section(name=data.get("section", None), hits=data.get("_hits", None))
+
 
 class Tag(Meta):
     @staticmethod
     def new_from_json_dict(data):
-        return Tag(name=data.get('tag', None),
-                   hits=data.get('_hits', None))
+        return Tag(name=data.get("tag", None), hits=data.get("_hits", None))
 
 
 class Referrer(Meta):
@@ -81,12 +83,14 @@ class Referrer(Meta):
 
     @staticmethod
     def new_from_json_dict(data):
-        return Referrer(name=data.get('name', data.get('title', None)),
-                        hits=data.get('_hits', None),
-                        ref_type=data.get('ref_type', data.get('type', data.get('category', None))))
+        return Referrer(
+            name=data.get("name", data.get("title", None)),
+            hits=data.get("_hits", None),
+            ref_type=data.get("ref_type", data.get("type", data.get("category", None))),
+        )
 
 
-class Shares():
+class Shares(object):
     def __init__(self, tw=None, fb=None, pi=None, li=None, total=None):
         self.facebook = fb
         self.twitter = tw
@@ -96,8 +100,10 @@ class Shares():
 
     @staticmethod
     def new_from_json_dict(data):
-        return Shares(tw=data.get('tw', None),
-                      fb=data.get('fb', None),
-                      pi=data.get('pi', None),
-                      li=data.get('li', None),
-                      total=data.get('total', None))
+        return Shares(
+            tw=data.get("tw", None),
+            fb=data.get("fb", None),
+            pi=data.get("pi", None),
+            li=data.get("li", None),
+            total=data.get("total", None),
+        )

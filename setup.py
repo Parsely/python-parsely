@@ -1,13 +1,13 @@
+from __future__ import absolute_import
 from distutils.core import setup
 
 setup(
-    name='python-parsely',
-    version='1.4.2',
-    packages = ['parsely'],
-    requires=['requests'],
-
-    author='emmett butler',
-    author_email='emmett.butler321@gmail.com',
-    url='http://github.com/emmett9001/python-parsely',
-    description='Python bindings for the Parsely API'
+    name="python-parsely",
+    version="1.4.2",
+    packages=["parsely"],
+    requires=["tornado", "six"],
+    author="Emmett Butler",
+    author_email="emmett@parsely.com",
+    url="http://github.com/Parsely/python-parsely",
+    description="Python bindings for the Parsely API",
 )

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import tornado.ioloop
 import tornado.web
 
@@ -27,19 +28,21 @@ class TestCallbackHandler(tornado.web.RequestHandler):
         Caller must be wrapped in @tornado.web.asynchronous
         Call to client method must include the _callback kwarg
         """
+
         def callback(result):
             self.write(result)
             self.finish()
+
         p = Parsely(API_KEY, secrets[API_KEY])
         p.analytics(aspect="authors", _callback=callback)
 
 
 def get_app():
-    application = tornado.web.Application([
-        (r"/test_sync", TestSyncHandler),
-        (r"/test_callback", TestCallbackHandler),
-    ])
+    application = tornado.web.Application(
+        [(r"/test_sync", TestSyncHandler), (r"/test_callback", TestCallbackHandler)]
+    )
     return application
+
 
 if __name__ == "__main__":
     application = get_app()
