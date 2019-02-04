@@ -11,14 +11,14 @@ Installation
 
 python-parsely is available on PyPI. To download it, use pip:
 
-    pip install python-parsely requests
+    pip install python-parsely
 
 Getting the Code
 ----------------
 
 `git clone` this repository - it's the primary source of the python-parsely code.
 
-    git clone http://github.com/emmett9001/python-parsely.git
+    git clone http://github.com/Parsely/python-parsely.git
 
 Using python-parsely
 --------------------
