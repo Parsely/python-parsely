@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name="python-parsely",
-    version="1.4.2",
+    version="1.5.0",
     packages=["parsely"],
     requires=["tornado", "six"],
     author="Emmett Butler",
